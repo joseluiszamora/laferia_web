@@ -33,7 +33,7 @@ export function CategoryTree() {
     setLoading(true);
     const result = await getCategoryTree();
     if (result.success) {
-      setCategories(result.data || []);
+      setCategories((result.data as CategoryNode[]) || []);
     }
     setLoading(false);
   };

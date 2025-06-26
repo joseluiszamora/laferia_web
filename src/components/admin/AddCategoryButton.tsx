@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import { Plus, X } from "lucide-react";
 import { createCategory, getCategories } from "@/actions/categories";
-import { CategoryFormData } from "@/types/category";
+import { CategoryFormData, Category } from "@/types/category";
 
 export function AddCategoryButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [parentCategories, setParentCategories] = useState<any[]>([]);
+  const [parentCategories, setParentCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
     slug: "",

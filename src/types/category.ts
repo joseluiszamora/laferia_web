@@ -23,3 +23,4 @@ export type CategoryTreeNode = Category & {
   children: CategoryTreeNode[];
   level: number;
 };
+export type { Category };
