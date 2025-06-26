@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Modelo de Categorías que coincide con la tabla SQL existente
+model Category {
+  categoryId       String   @id @default(dbgenerated("gen_random_uuid()")) @map("category_id") @db.Uuid
+  parentCategoryId String?  @map("parent_category_id") @db.Uuid
+  name             String   @unique @db.VarChar(255)
+  slug             String   @unique @db.VarChar(255)
+  description      String?  @db.Text
+  icon             String?  @db.VarChar(100)
+  color            String?  @db.VarChar(7) // Para colores hex #RRGGBB
+  imageUrl         String?  @map("image_url") @db.Text
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Auto-relación para categorías padre/hijo
+  parentCategory Category?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [categoryId], onDelete: Cascade)
+  subcategories  Category[] @relation("CategoryHierarchy")
+
+  // Relación con productos (si tienes tabla de productos)
+  products Product[]
+
+  @@map("Category")
+}
+
+// Modelo básico de Productos para la relación
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relación con categoría
+  categoryId String   @map("category_id") @db.Uuid
+  category   Category @relation(fields: [categoryId], references: [categoryId])
+
+  @@map("products")
+}
