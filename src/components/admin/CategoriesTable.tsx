@@ -134,7 +134,7 @@ export function CategoriesTable() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center text-sm text-gray-900">
                     <Package className="h-4 w-4 mr-2 text-gray-400" />
-                    {category._count?.products || 0} productos
+                    {category._count?.productos || 0} productos
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

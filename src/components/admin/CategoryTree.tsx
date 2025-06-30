@@ -14,10 +14,10 @@ interface CategoryNode {
   imageUrl?: string | null;
   parentCategoryId?: string | null;
   createdAt?: Date;
-  _count: {
-    products: number;
+  _count?: {
+    productos: number;
   };
-  subcategories: CategoryNode[];
+  subcategories?: CategoryNode[];
 }
 
 export function CategoryTree() {
@@ -33,7 +33,7 @@ export function CategoryTree() {
     setLoading(true);
     const result = await getCategoryTree();
     if (result.success) {
-      setCategories((result.data as CategoryNode[]) || []);
+      setCategories((result.data as unknown as CategoryNode[]) || []);
     }
     setLoading(false);
   };
@@ -50,7 +50,8 @@ export function CategoryTree() {
 
   const renderCategory = (category: CategoryNode, level = 0) => {
     const isExpanded = expandedNodes.has(category.categoryId);
-    const hasChildren = category.subcategories.length > 0;
+    const hasChildren =
+      category.subcategories && category.subcategories.length > 0;
 
     return (
       <div key={category.categoryId}>
@@ -87,12 +88,12 @@ export function CategoryTree() {
             <div className="flex items-center ml-auto space-x-4">
               <div className="flex items-center text-xs text-gray-500">
                 <Package className="h-3 w-3 mr-1" />
-                {category._count.products}
+                {category._count?.productos || 0}
               </div>
 
               {hasChildren && (
                 <div className="text-xs text-blue-600">
-                  {category.subcategories.length} sub.
+                  {category.subcategories?.length || 0} sub.
                 </div>
               )}
             </div>
@@ -101,7 +102,7 @@ export function CategoryTree() {
 
         {isExpanded && hasChildren && (
           <div className="ml-4">
-            {category.subcategories.map((subcategory) =>
+            {category.subcategories?.map((subcategory) =>
               renderCategory(subcategory, level + 1)
             )}
           </div>

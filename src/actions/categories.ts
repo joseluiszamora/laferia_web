@@ -6,19 +6,19 @@ import { revalidatePath } from "next/cache";
 
 export async function getCategories() {
   try {
-    const categories = await prisma.Category.findMany({
+    const categories = await prisma.category.findMany({
       include: {
-        // parentCategory: true,
-        // subcategories: true,
+        parentCategory: true,
+        subcategories: true,
         _count: {
           select: {
-            // products: true,
-            // subcategories: true,
+            productos: true,
+            subcategories: true,
           },
         },
       },
       orderBy: {
-        // createdAt: "desc",
+        sortOrder: "asc",
       },
     });
     return { success: true, data: categories };
@@ -30,38 +30,120 @@ export async function getCategories() {
 
 export async function getCategoryTree() {
   try {
-    const categories = await prisma.Category.findMany({
-      include: {
-        subcategories: {
-          include: {
-            subcategories: true,
-            _count: {
-              select: { products: true },
-            },
+    // Función recursiva para obtener todas las categorías con anidamiento completo
+    const getCategoriesWithChildren = async (
+      parentId: string | null = null
+    ): Promise<unknown[]> => {
+      const categories = await prisma.category.findMany({
+        where: {
+          parentCategoryId: parentId,
+          isActive: true,
+        },
+        include: {
+          _count: {
+            select: { productos: true },
           },
         },
-        _count: {
-          select: { products: true },
+        orderBy: {
+          sortOrder: "asc",
         },
-      },
-      where: {
-        parent_category_id: null,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
-    return { success: true, data: categories };
+      });
+
+      // Para cada categoría, obtener sus subcategorías recursivamente
+      const categoriesWithChildren = await Promise.all(
+        categories.map(async (category) => {
+          const subcategories = await getCategoriesWithChildren(
+            category.categoryId
+          );
+          return {
+            ...category,
+            subcategories,
+          };
+        })
+      );
+
+      return categoriesWithChildren;
+    };
+
+    // Obtener solo las categorías raíz (sin padre) y sus descendientes
+    const rootCategories = await getCategoriesWithChildren(null);
+
+    return { success: true, data: rootCategories };
   } catch (error) {
     console.error("Error fetching category tree:", error);
     return { success: false, error: "Error al obtener el árbol de categorías" };
   }
 }
 
+export async function getCategoryTreeLimited(maxLevels: number = 3) {
+  try {
+    // Función recursiva con límite de niveles
+    const getCategoriesWithChildren = async (
+      parentId: string | null = null,
+      currentLevel: number = 0
+    ): Promise<unknown[]> => {
+      if (currentLevel >= maxLevels) {
+        return [];
+      }
+
+      const categories = await prisma.category.findMany({
+        where: {
+          parentCategoryId: parentId,
+          isActive: true,
+        },
+        include: {
+          _count: {
+            select: { productos: true },
+          },
+        },
+        orderBy: {
+          sortOrder: "asc",
+        },
+      });
+
+      // Para cada categoría, obtener sus subcategorías recursivamente
+      const categoriesWithChildren = await Promise.all(
+        categories.map(async (category) => {
+          const subcategories = await getCategoriesWithChildren(
+            category.categoryId,
+            currentLevel + 1
+          );
+          return {
+            ...category,
+            subcategories,
+            hasMoreChildren:
+              currentLevel + 1 >= maxLevels && subcategories.length === 0
+                ? (await prisma.category.count({
+                    where: {
+                      parentCategoryId: category.categoryId,
+                      isActive: true,
+                    },
+                  })) > 0
+                : false,
+          };
+        })
+      );
+
+      return categoriesWithChildren;
+    };
+
+    // Obtener solo las categorías raíz (sin padre) y sus descendientes
+    const rootCategories = await getCategoriesWithChildren(null, 0);
+
+    return { success: true, data: rootCategories };
+  } catch (error) {
+    console.error("Error fetching limited category tree:", error);
+    return {
+      success: false,
+      error: "Error al obtener el árbol de categorías limitado",
+    };
+  }
+}
+
 export async function createCategory(data: CategoryFormData) {
   try {
     // Validar que el slug no exista
-    const existingSlug = await prisma.Category.findUnique({
+    const existingSlug = await prisma.category.findUnique({
       where: { slug: data.slug },
     });
 
@@ -70,7 +152,7 @@ export async function createCategory(data: CategoryFormData) {
     }
 
     // Validar que el nombre no exista
-    const existingName = await prisma.Category.findUnique({
+    const existingName = await prisma.category.findUnique({
       where: { name: data.name },
     });
 
@@ -80,8 +162,8 @@ export async function createCategory(data: CategoryFormData) {
 
     // Validar categoría padre si se especifica
     if (data.parentCategoryId) {
-      const parentExists = await prisma.Category.findUnique({
-        where: { category_id: data.parentCategoryId },
+      const parentExists = await prisma.category.findUnique({
+        where: { categoryId: data.parentCategoryId },
       });
 
       if (!parentExists) {
@@ -89,22 +171,22 @@ export async function createCategory(data: CategoryFormData) {
       }
     }
 
-    const category = await prisma.Category.create({
+    const category = await prisma.category.create({
       data: {
         name: data.name,
         slug: data.slug,
         description: data.description,
         icon: data.icon,
         color: data.color,
-        // imageUrl: data.imageUrl,
-        parent_category_id: data.parentCategoryId,
+        imageUrl: data.imageUrl,
+        parentCategoryId: data.parentCategoryId,
       },
       include: {
-        // parentCategory: true,
+        parentCategory: true,
         _count: {
           select: {
-            // products: true,
-            // subcategories: true,
+            productos: true,
+            subcategories: true,
           },
         },
       },
@@ -121,8 +203,8 @@ export async function createCategory(data: CategoryFormData) {
 export async function updateCategory(id: string, data: CategoryFormData) {
   try {
     // Validar que la categoría existe
-    const existingCategory = await prisma.Category.findUnique({
-      where: { category_id: id },
+    const existingCategory = await prisma.category.findUnique({
+      where: { categoryId: id },
     });
 
     if (!existingCategory) {
@@ -131,7 +213,7 @@ export async function updateCategory(id: string, data: CategoryFormData) {
 
     // Validar que el slug no exista en otra categoría
     if (data.slug !== existingCategory.slug) {
-      const existingSlug = await prisma.Category.findUnique({
+      const existingSlug = await prisma.category.findUnique({
         where: { slug: data.slug },
       });
 
@@ -142,7 +224,7 @@ export async function updateCategory(id: string, data: CategoryFormData) {
 
     // Validar que el nombre no exista en otra categoría
     if (data.name !== existingCategory.name) {
-      const existingName = await prisma.Category.findUnique({
+      const existingName = await prisma.category.findUnique({
         where: { name: data.name },
       });
 
@@ -153,8 +235,8 @@ export async function updateCategory(id: string, data: CategoryFormData) {
 
     // Validar categoría padre si se especifica
     if (data.parentCategoryId && data.parentCategoryId !== id) {
-      const parentExists = await prisma.Category.findUnique({
-        where: { category_id: data.parentCategoryId },
+      const parentExists = await prisma.category.findUnique({
+        where: { categoryId: data.parentCategoryId },
       });
 
       if (!parentExists) {
@@ -162,24 +244,24 @@ export async function updateCategory(id: string, data: CategoryFormData) {
       }
     }
 
-    const category = await prisma.Category.update({
-      where: { category_id: id },
+    const category = await prisma.category.update({
+      where: { categoryId: id },
       data: {
         name: data.name,
         slug: data.slug,
         description: data.description,
         icon: data.icon,
         color: data.color,
-        // imageUrl: data.imageUrl,
-        parent_category_id:
+        imageUrl: data.imageUrl,
+        parentCategoryId:
           data.parentCategoryId === id ? null : data.parentCategoryId,
       },
       include: {
-        // parentCategory: true,
+        parentCategory: true,
         _count: {
           select: {
-            // products: true,
-            // subcategories: true,
+            productos: true,
+            subcategories: true,
           },
         },
       },
@@ -196,13 +278,13 @@ export async function updateCategory(id: string, data: CategoryFormData) {
 export async function deleteCategory(id: string) {
   try {
     // Verificar que la categoría existe
-    const category = await prisma.Category.findUnique({
-      where: { category_id: id },
+    const category = await prisma.category.findUnique({
+      where: { categoryId: id },
       include: {
         _count: {
           select: {
-            // products: true,
-            // subcategories: true,
+            productos: true,
+            subcategories: true,
           },
         },
       },
@@ -213,24 +295,24 @@ export async function deleteCategory(id: string) {
     }
 
     // Verificar si tiene productos asociados
-    // if (category._count.products > 0) {
-    //   return {
-    //     success: false,
-    //     error:
-    //       "No se puede eliminar la categoría porque tiene productos asociados",
-    //   };
-    // }
+    if (category._count.productos > 0) {
+      return {
+        success: false,
+        error:
+          "No se puede eliminar la categoría porque tiene productos asociados",
+      };
+    }
 
-    // // Verificar si tiene subcategorías
-    // if (category._count.subcategories > 0) {
-    //   return {
-    //     success: false,
-    //     error: "No se puede eliminar la categoría porque tiene subcategorías",
-    //   };
-    // }
+    // Verificar si tiene subcategorías
+    if (category._count.subcategories > 0) {
+      return {
+        success: false,
+        error: "No se puede eliminar la categoría porque tiene subcategorías",
+      };
+    }
 
-    await prisma.Category.delete({
-      where: { category_id: id },
+    await prisma.category.delete({
+      where: { categoryId: id },
     });
 
     revalidatePath("/admin/categorias");

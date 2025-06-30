@@ -4,7 +4,7 @@ export type CategoryWithSubcategories = Category & {
   subcategories: Category[];
   parentCategory: Category | null;
   _count?: {
-    products: number;
+    productos: number;
     subcategories: number;
   };
 };
