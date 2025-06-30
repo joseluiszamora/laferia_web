@@ -79,11 +79,36 @@ export type ProductsTableParams = {
   search?: string;
   categoriaId?: string;
   marcaId?: string;
+  tiendaId?: string;
   status?: ProductStatus;
   isAvailable?: boolean;
   isFeatured?: boolean;
   sortBy?: "name" | "price" | "stock" | "createdAt" | "viewCount" | "saleCount";
   sortOrder?: "asc" | "desc";
+};
+
+export type ProductPaginationInfo = {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+};
+
+export type ProductsResponse = {
+  success: boolean;
+  data?: {
+    products: ProductWithDetails[];
+    pagination: ProductPaginationInfo;
+  };
+  error?: string;
+};
+
+export type ProductsStats = {
+  total: number;
+  publicados: number;
+  borradores: number;
+  agotados: number;
+  destacados: number;
 };
 
 export { ProductStatus, MediaType };

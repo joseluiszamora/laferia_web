@@ -1,3 +1,5 @@
+"use client";
+
 import { ProductsTable } from "@/components/admin/ProductsTable";
 import { AddProductButton } from "@/components/admin/AddProductButton";
 
