@@ -360,7 +360,7 @@ export function TiendaDetailsModal({
                     </div>
                     <p className="text-2xl font-bold text-yellow-600">
                       {tienda.calificacionPromedio
-                        ? tienda.calificacionPromedio.toFixed(1)
+                        ? Number(tienda.calificacionPromedio).toFixed(1)
                         : "N/A"}
                     </p>
                     <p className="text-sm text-gray-500">Calificación</p>

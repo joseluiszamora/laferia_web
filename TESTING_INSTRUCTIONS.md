@@ -9,17 +9,20 @@ El sistema completo de gestión de tiendas ha sido implementado y todos los erro
 ## Cómo Probar las Funcionalidades
 
 ### 1. Acceder al Sistema
+
 - Navegar a: `http://localhost:3000/admin/tiendas`
 - O usar el menú lateral: Admin → Tiendas
 
 ### 2. Funcionalidades Disponibles para Probar
 
 #### A. Visualización de Tiendas
+
 - ✅ **Tabla de tiendas** con información completa
 - ✅ **Paginación** configurable (10, 25, 50, 100 items)
 - ✅ **Sin datos**: Mensaje cuando no hay tiendas
 
 #### B. Filtros y Búsqueda
+
 - ✅ **Búsqueda por texto**: Nombre, propietario, email, descripción, dirección
 - ✅ **Filtro por categoría**: Dropdown con categorías disponibles
 - ✅ **Filtro por estado**: Activa, Pendiente, Inactiva, Suspendida
@@ -27,6 +30,7 @@ El sistema completo de gestión de tiendas ha sido implementado y todos los erro
 - ✅ **Limpiar filtros**: Botón para resetear todos los filtros
 
 #### C. Crear Nueva Tienda (Alta)
+
 - ✅ **Botón "Agregar Tienda"** en la esquina superior derecha
 - ✅ **Modal de creación** con formulario completo
 - ✅ **Auto-generación de slug** basado en el nombre
@@ -37,6 +41,7 @@ El sistema completo de gestión de tiendas ha sido implementado y todos los erro
 - ✅ **Campos opcionales**: Email, teléfono, WhatsApp, URLs, descripción
 
 #### D. Ver Detalles (Consulta)
+
 - ✅ **Botón "Ver" (ícono ojo)** en cada fila
 - ✅ **Modal de detalles** con información organizada en secciones:
   - Información básica
@@ -49,6 +54,7 @@ El sistema completo de gestión de tiendas ha sido implementado y todos los erro
   - URLs de recursos
 
 #### E. Editar Tienda (Modificación)
+
 - ✅ **Botón "Editar" (ícono lápiz)** en cada fila
 - ✅ **Modal de edición** con formulario pre-poblado
 - ✅ **Validaciones en tiempo real**
@@ -56,17 +62,20 @@ El sistema completo de gestión de tiendas ha sido implementado y todos los erro
 - ✅ **Carga de categorías** disponibles
 
 #### F. Cambiar Estado (Modificación Rápida)
+
 - ✅ **Dropdown de estado** directamente en la tabla
 - ✅ **Cambio inmediato** sin modal
 - ✅ **Colores diferenciados** por estado
 
 #### G. Eliminar Tienda (Baja)
+
 - ✅ **Botón "Eliminar" (ícono basura)** en cada fila
 - ✅ **Confirmación** antes de eliminar
 - ✅ **Validaciones**: No se puede eliminar si tiene productos o comentarios
 - ✅ **Mensajes de error** informativos
 
 #### H. Funcionalidades Especiales
+
 - ✅ **Enlaces a Google Maps** desde coordenadas
 - ✅ **Enlaces de contacto** (email, teléfono, WhatsApp)
 - ✅ **Imágenes de logo** en la tabla
@@ -75,11 +84,13 @@ El sistema completo de gestión de tiendas ha sido implementado y todos los erro
 ## Limitaciones Actuales
 
 ⚠️ **Base de Datos**: No se puede conectar a Supabase desde el entorno actual, por lo que:
+
 - No se pueden crear/editar/eliminar tiendas reales
 - No hay datos de prueba cargados
 - Las acciones mostrarán errores de conexión
 
 ⚠️ **Datos de Prueba**: Para probar completamente el sistema se necesitaría:
+
 - Configurar una base de datos local (PostgreSQL o SQLite)
 - O configurar correctamente la conexión a Supabase
 - Ejecutar las migraciones de Prisma
@@ -98,16 +109,19 @@ El sistema completo de gestión de tiendas ha sido implementado y todos los erro
 ## Próximos Pasos para Deployment
 
 1. **Configurar Base de Datos**:
+
    - Configurar PostgreSQL local o
    - Configurar correctamente Supabase o
    - Cambiar a SQLite para desarrollo
 
 2. **Migrar Schema**:
+
    ```bash
    npx prisma migrate dev
    ```
 
 3. **Cargar Datos de Prueba**:
+
    ```bash
    npm run db:seed
    ```

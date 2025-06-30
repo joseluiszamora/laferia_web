@@ -18,10 +18,7 @@ export default function TiendasPage() {
             Gestiona las tiendas registradas en la plataforma
           </p>
         </div>
-        <AddTiendaButton
-          onSuccess={handleTiendaSuccess}
-          className="ml-4"
-        />
+        <AddTiendaButton onSuccess={handleTiendaSuccess} className="ml-4" />
       </div>
 
       <TiendasTable />

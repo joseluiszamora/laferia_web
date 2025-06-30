@@ -9,6 +9,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 ### 1. Acciones del Servidor (`/src/actions/tiendas.ts`)
 
 **Funciones implementadas:**
+
 - `getTiendas(params)` - Obtiene tiendas con paginación, filtros y ordenamiento
 - `getTiendaById(id)` - Obtiene una tienda específica por ID
 - `createTienda(data)` - Crea una nueva tienda
@@ -18,6 +19,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 - `getTiendasStats()` - Obtiene estadísticas generales de tiendas
 
 **Características:**
+
 - Validación de datos (slugs únicos, emails únicos, categorías existentes)
 - Verificación de dependencias antes de eliminar
 - Manejo de errores y respuestas estructuradas
@@ -26,6 +28,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 ### 2. Tipos TypeScript (`/src/types/tienda.ts`)
 
 **Tipos definidos:**
+
 - `TiendaWithDetails` - Tienda con información de categoría y conteos
 - `TiendaFormData` - Datos para formularios de tienda
 - `TiendasTableParams` - Parámetros para filtros y paginación
@@ -36,6 +39,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 ### 3. Componentes de UI
 
 #### `TiendasTable` (`/src/components/admin/TiendasTable.tsx`)
+
 - Tabla completa con todas las tiendas
 - Filtros avanzados (búsqueda, categoría, estado, ordenamiento)
 - Paginación integrada
@@ -44,6 +48,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 - Información rica (logos, contacto, estadísticas)
 
 #### `TiendaFilters` (`/src/components/admin/TiendaFilters.tsx`)
+
 - Componente de filtros reutilizable
 - Búsqueda por texto
 - Filtro por categoría
@@ -53,6 +58,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 - Función de limpiar filtros
 
 #### `TiendaDetailsModal` (`/src/components/admin/TiendaDetailsModal.tsx`)
+
 - Modal para ver información completa de la tienda
 - Secciones organizadas:
   - Información básica
@@ -65,6 +71,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
   - URLs de recursos
 
 #### `EditTiendaModal` (`/src/components/admin/EditTiendaModal.tsx`)
+
 - Modal para editar tiendas existentes
 - Formulario completo con todos los campos
 - Validación en tiempo real
@@ -73,6 +80,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 - Selección múltiple de días de atención
 
 #### `AddTiendaButton` (`/src/components/admin/AddTiendaButton.tsx`)
+
 - Botón y modal para crear nuevas tiendas
 - Formulario completo con validación
 - Auto-generación de slug basado en nombre
@@ -80,6 +88,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 - Manejo de errores
 
 #### `Pagination` (`/src/components/admin/Pagination.tsx`)
+
 - Componente reutilizable para paginación
 - Navegación entre páginas
 - Información de registros mostrados
@@ -101,12 +110,14 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 ## Características Principales
 
 ### Funcionalidades CRUD Completas
+
 - ✅ **Create (Alta):** Crear nuevas tiendas con validación completa
 - ✅ **Read (Consulta):** Visualizar tiendas con filtros, búsqueda y paginación
 - ✅ **Update (Modificación):** Editar todas las propiedades de las tiendas
 - ✅ **Delete (Baja):** Eliminar tiendas con validaciones de dependencias
 
 ### Funcionalidades Avanzadas
+
 - **Filtros avanzados:** Por nombre, propietario, email, categoría, estado
 - **Ordenamiento:** Por nombre, fecha, calificación, total de comentarios
 - **Paginación:** Configurable (10, 25, 50, 100 items por página)
@@ -117,6 +128,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 - **Gestión de horarios:** Días y horarios de atención
 
 ### Campos de Tienda Gestionados
+
 - Información básica: nombre, slug, propietario, estado
 - Contacto: email, teléfono, WhatsApp
 - Ubicación: latitud, longitud, dirección
@@ -127,6 +139,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 - Estadísticas: calificación, total de comentarios
 
 ### Validaciones Implementadas
+
 - **Slug único:** No se permiten slugs duplicados
 - **Email único:** Validación de emails únicos entre tiendas
 - **Categoría válida:** Verificación de que la categoría existe
@@ -135,6 +148,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 - **Dependencias:** No se puede eliminar tienda con productos o comentarios
 
 ### Integración con Sistema Existente
+
 - **Reutilización de componentes:** Pagination, estilos consistentes
 - **Patrones similares:** Siguiendo el patrón de categorías
 - **Tipos TypeScript:** Completamente tipado
@@ -153,6 +167,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 ## Estado del Proyecto
 
 ✅ **Completado:**
+
 - Sistema ABM completo para tiendas
 - Todos los componentes implementados
 - Validaciones y manejo de errores
@@ -161,6 +176,7 @@ Se ha implementado un sistema completo de Alta, Baja y Modificación (ABM) para 
 - Funcionalidades avanzadas de filtros y paginación
 
 🔄 **Pendiente:**
+
 - Conexión a base de datos para datos de prueba
 - Testing de todos los componentes
 - Optimizaciones de rendimiento si es necesario
