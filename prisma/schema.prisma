@@ -11,15 +11,16 @@ datasource db {
 }
 
 model Category {
-  category_id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  parent_category_id String?  @db.Uuid
-  name               String   @unique
-  slug               String   @unique
+  category_id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parent_category_id String?    @db.Uuid
+  name               String     @unique
+  slug               String     @unique
   description        String?
   icon               String?
   color              String?
   image_url          String?
-  created_at         DateTime @default(now())
+  created_at         DateTime   @default(now())
+  Producto           Producto[]
   Tienda             Tienda[]
 
   @@index([name], map: "idx_category_name")
@@ -76,4 +77,82 @@ model Tienda {
   @@index([nombre], map: "idx_tienda_nombre")
   @@index([nombre_propietario], map: "idx_tienda_propietario")
   @@index([latitud, longitud], map: "idx_tienda_ubicacion")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Producto {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String              @db.VarChar(255)
+  slug              String              @unique @db.VarChar(255)
+  description       String
+  price             Decimal             @db.Decimal(10, 2)
+  discounted_price  Decimal?            @db.Decimal(10, 2)
+  accept_offers     Boolean?            @default(false)
+  categoria_id      String              @db.Uuid
+  marca_id          String?             @db.Uuid
+  status            String?             @default("borrador") @db.VarChar(20)
+  is_available      Boolean?            @default(true)
+  is_favorite       Boolean?            @default(false)
+  logo_url          String?
+  created_at        DateTime?           @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?           @default(now()) @db.Timestamptz(6)
+  Category          Category            @relation(fields: [categoria_id], references: [category_id], onUpdate: NoAction)
+  ProductoAtributos ProductoAtributos[]
+  ProductoMedias    ProductoMedias[]
+
+  @@index([is_available], map: "idx_producto_available")
+  @@index([categoria_id], map: "idx_producto_categoria")
+  @@index([categoria_id, status, is_available], map: "idx_producto_categoria_status_available")
+  @@index([created_at], map: "idx_producto_created_at")
+  @@index([marca_id], map: "idx_producto_marca")
+  @@index([name], map: "idx_producto_name")
+  @@index([price], map: "idx_producto_price")
+  @@index([slug], map: "idx_producto_slug")
+  @@index([status], map: "idx_producto_status")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ProductoAtributos {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  producto_id String    @db.Uuid
+  nombre      String    @db.VarChar(100)
+  valor       String    @db.VarChar(255)
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+  Producto    Producto  @relation(fields: [producto_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([nombre], map: "idx_producto_atributos_nombre")
+  @@index([nombre, valor], map: "idx_producto_atributos_nombre_valor")
+  @@index([producto_id], map: "idx_producto_atributos_producto_id")
+  @@index([valor], map: "idx_producto_atributos_valor")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ProductoMedias {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  producto_id   String    @db.Uuid
+  type          String    @default("image") @db.VarChar(20)
+  url           String
+  thumbnail_url String?
+  width         Int?
+  height        Int?
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime? @default(now()) @db.Timestamptz(6)
+  is_main       Boolean?  @default(false)
+  is_active     Boolean?  @default(true)
+  orden         Int?      @default(0)
+  descripcion   String?
+  alt_text      String?   @db.VarChar(255)
+  metadata      Json?
+  Producto      Producto  @relation(fields: [producto_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([is_active], map: "idx_producto_medias_active")
+  @@index([is_main], map: "idx_producto_medias_main")
+  @@index([orden], map: "idx_producto_medias_orden")
+  @@index([producto_id], map: "idx_producto_medias_producto_id")
+  @@index([type], map: "idx_producto_medias_type")
 }
