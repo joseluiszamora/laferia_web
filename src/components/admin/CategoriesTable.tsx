@@ -9,6 +9,8 @@ import {
 } from "@/types/category";
 import { CategoryFilters } from "./CategoryFilters";
 import { Pagination } from "./Pagination";
+import { CategoryDetailsModal } from "./CategoryDetailsModal";
+import { EditCategoryModal } from "./EditCategoryModal";
 
 export function CategoriesTable() {
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
@@ -28,6 +30,12 @@ export function CategoriesTable() {
   const [showOnlyRoot, setShowOnlyRoot] = useState(false);
   const [includeInactive, setIncludeInactive] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Estados para modales
+  const [selectedCategory, setSelectedCategory] =
+    useState<CategoryWithSubcategories | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const loadCategories = useCallback(
     async (
@@ -94,6 +102,32 @@ export function CategoriesTable() {
     setShowOnlyRoot(false);
     setIncludeInactive(false);
     setItemsPerPage(10);
+  };
+
+  const handleViewCategory = (category: CategoryWithSubcategories) => {
+    setSelectedCategory(category);
+    setShowDetailsModal(true);
+  };
+
+  const handleEditCategory = (category: CategoryWithSubcategories) => {
+    setSelectedCategory(category);
+    setShowEditModal(true);
+  };
+
+  const handleCategoryUpdated = () => {
+    loadCategories(
+      pagination.page,
+      searchTerm,
+      showOnlyRoot,
+      includeInactive,
+      itemsPerPage
+    );
+  };
+
+  const handleCloseModals = () => {
+    setSelectedCategory(null);
+    setShowDetailsModal(false);
+    setShowEditModal(false);
   };
 
   const handleDelete = async (id: string, name: string) => {
@@ -270,19 +304,21 @@ export function CategoriesTable() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex space-x-2">
                     <button
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-blue-600 hover:text-blue-900 transition-colors"
                       title="Ver detalles"
+                      onClick={() => handleViewCategory(category)}
                     >
                       <Eye className="h-4 w-4" />
                     </button>
                     <button
-                      className="text-green-600 hover:text-green-900"
+                      className="text-green-600 hover:text-green-900 transition-colors"
                       title="Editar"
+                      onClick={() => handleEditCategory(category)}
                     >
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 transition-colors"
                       title="Eliminar"
                       disabled={deleting === category.categoryId}
                       onClick={() =>
@@ -327,6 +363,20 @@ export function CategoriesTable() {
           totalItems={pagination.total}
         />
       )}
+
+      {/* Modales */}
+      <CategoryDetailsModal
+        isOpen={showDetailsModal}
+        onClose={handleCloseModals}
+        category={selectedCategory}
+      />
+
+      <EditCategoryModal
+        isOpen={showEditModal}
+        onClose={handleCloseModals}
+        category={selectedCategory}
+        onCategoryUpdated={handleCategoryUpdated}
+      />
     </div>
   );
 }
