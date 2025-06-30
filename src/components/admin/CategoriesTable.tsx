@@ -1,26 +1,99 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Edit, Trash2, Package, FolderTree, Eye } from "lucide-react";
 import { getCategories, deleteCategory } from "@/actions/categories";
-import { CategoryWithSubcategories } from "@/types/category";
+import {
+  CategoryWithSubcategories,
+  CategoryPaginationInfo,
+} from "@/types/category";
+import { CategoryFilters } from "./CategoryFilters";
+import { Pagination } from "./Pagination";
 
 export function CategoriesTable() {
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<CategoryPaginationInfo>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
+
+  // Estados de filtros
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showOnlyRoot, setShowOnlyRoot] = useState(false);
+  const [includeInactive, setIncludeInactive] = useState(false);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const loadCategories = useCallback(
+    async (
+      page: number = 1,
+      search: string = "",
+      onlyRoot: boolean = false,
+      includeInactiveItems: boolean = false,
+      limit: number = 10
+    ) => {
+      setLoading(true);
+      const result = await getCategories({
+        page,
+        limit,
+        search: search.trim(),
+        parentId: onlyRoot ? null : undefined,
+        includeInactive: includeInactiveItems,
+      });
+
+      if (result.success) {
+        setCategories(result.data || []);
+        if (result.pagination) {
+          setPagination(result.pagination);
+        }
+      } else {
+        console.error("Error loading categories:", result.error);
+      }
+      setLoading(false);
+    },
+    []
+  );
 
   useEffect(() => {
-    loadCategories();
-  }, []);
+    loadCategories(1, searchTerm, showOnlyRoot, includeInactive, itemsPerPage);
+  }, [loadCategories, searchTerm, showOnlyRoot, includeInactive, itemsPerPage]);
 
-  const loadCategories = async () => {
-    setLoading(true);
-    const result = await getCategories();
-    if (result.success) {
-      setCategories(result.data || []);
-    }
-    setLoading(false);
+  const handlePageChange = (page: number) => {
+    loadCategories(
+      page,
+      searchTerm,
+      showOnlyRoot,
+      includeInactive,
+      itemsPerPage
+    );
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+
+  const handleShowOnlyRootChange = (value: boolean) => {
+    setShowOnlyRoot(value);
+  };
+
+  const handleIncludeInactiveChange = (value: boolean) => {
+    setIncludeInactive(value);
+  };
+
+  const handleItemsPerPageChange = (value: number) => {
+    setItemsPerPage(value);
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setShowOnlyRoot(false);
+    setIncludeInactive(false);
+    setItemsPerPage(10);
   };
 
   const handleDelete = async (id: string, name: string) => {
@@ -34,7 +107,13 @@ export function CategoriesTable() {
     const result = await deleteCategory(id);
 
     if (result.success) {
-      await loadCategories();
+      await loadCategories(
+        pagination.page,
+        searchTerm,
+        showOnlyRoot,
+        includeInactive,
+        itemsPerPage
+      );
     } else {
       alert(result.error || "Error al eliminar la categoría");
     }
@@ -49,15 +128,34 @@ export function CategoriesTable() {
     }).format(new Date(date));
   };
 
+  const showingFrom = (pagination.page - 1) * pagination.limit + 1;
+  const showingTo = Math.min(
+    pagination.page * pagination.limit,
+    pagination.total
+  );
+
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-12 bg-gray-200 rounded"></div>
-            ))}
+      <div className="bg-white rounded-lg shadow">
+        <CategoryFilters
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+          showOnlyRoot={showOnlyRoot}
+          onShowOnlyRootChange={handleShowOnlyRootChange}
+          includeInactive={includeInactive}
+          onIncludeInactiveChange={handleIncludeInactiveChange}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          onClearFilters={handleClearFilters}
+        />
+        <div className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-12 bg-gray-200 rounded"></div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -66,6 +164,18 @@ export function CategoriesTable() {
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
+      <CategoryFilters
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        showOnlyRoot={showOnlyRoot}
+        onShowOnlyRootChange={handleShowOnlyRootChange}
+        includeInactive={includeInactive}
+        onIncludeInactiveChange={handleIncludeInactiveChange}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+        onClearFilters={handleClearFilters}
+      />
+
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -81,6 +191,9 @@ export function CategoriesTable() {
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Subcategorías
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estado
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Fecha Creación
@@ -134,11 +247,22 @@ export function CategoriesTable() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center text-sm text-gray-900">
                     <Package className="h-4 w-4 mr-2 text-gray-400" />
-                    {category._count?.productos || 0} productos
+                    {category._count?.productos || 0}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {category._count?.subcategories || 0} subcategorías
+                  {category._count?.subcategories || 0}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      category.isActive
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {category.isActive ? "Activa" : "Inactiva"}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {formatDate(category.createdAt)}
@@ -178,18 +302,31 @@ export function CategoriesTable() {
           </tbody>
         </table>
 
-        {categories.length === 0 && (
+        {categories.length === 0 && !loading && (
           <div className="text-center py-12">
             <FolderTree className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">
-              No hay categorías
+              No se encontraron categorías
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              Comienza creando tu primera categoría.
+              {searchTerm || showOnlyRoot || includeInactive
+                ? "Intenta ajustar los filtros o crear una nueva categoría."
+                : "Comienza creando tu primera categoría."}
             </p>
           </div>
         )}
       </div>
+
+      {pagination.total > 0 && (
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          onPageChange={handlePageChange}
+          showingFrom={showingFrom}
+          showingTo={showingTo}
+          totalItems={pagination.total}
+        />
+      )}
     </div>
   );
 }

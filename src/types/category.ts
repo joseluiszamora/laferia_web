@@ -23,4 +23,21 @@ export type CategoryTreeNode = Category & {
   children: CategoryTreeNode[];
   level: number;
 };
+
+export type CategoryPaginationInfo = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+};
+
+export type CategoriesResponse = {
+  success: boolean;
+  data?: CategoryWithSubcategories[];
+  pagination?: CategoryPaginationInfo;
+  error?: string;
+};
+
 export type { Category };

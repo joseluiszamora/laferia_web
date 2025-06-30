@@ -4,9 +4,49 @@ import { prisma } from "@/lib/prisma";
 import { CategoryFormData } from "@/types/category";
 import { revalidatePath } from "next/cache";
 
-export async function getCategories() {
+export async function getCategories(options?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  parentId?: string | null;
+  includeInactive?: boolean;
+}) {
   try {
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      parentId,
+      includeInactive = false,
+    } = options || {};
+
+    const skip = (page - 1) * limit;
+
+    // Construir filtros
+    const where: Record<string, unknown> = {};
+
+    if (!includeInactive) {
+      where.isActive = true;
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { slug: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (parentId !== undefined) {
+      where.parentCategoryId = parentId;
+    }
+
+    // Obtener total de registros para paginación
+    const total = await prisma.category.count({ where });
+
+    // Obtener categorías con paginación
     const categories = await prisma.category.findMany({
+      where,
       include: {
         parentCategory: true,
         subcategories: true,
@@ -17,11 +57,25 @@ export async function getCategories() {
           },
         },
       },
-      orderBy: {
-        sortOrder: "asc",
-      },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      skip,
+      take: limit,
     });
-    return { success: true, data: categories };
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      success: true,
+      data: categories,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    };
   } catch (error) {
     console.error("Error fetching categories:", error);
     return { success: false, error: "Error al obtener las categorías" };
