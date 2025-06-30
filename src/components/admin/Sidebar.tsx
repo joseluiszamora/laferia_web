@@ -18,6 +18,7 @@ const navigation = [
   { name: "Productos", href: "/admin/productos", icon: Package },
   { name: "Pedidos", href: "/admin/pedidos", icon: ShoppingCart },
   { name: "Clientes", href: "/admin/clientes", icon: Users },
+  { name: "Tiendas", href: "/admin/tiendas", icon: Store },
   { name: "Categorías", href: "/admin/categorias", icon: FolderTree },
   { name: "Analíticas", href: "/admin/analiticas", icon: BarChart3 },
   { name: "Configuración", href: "/admin/configuracion", icon: Settings },

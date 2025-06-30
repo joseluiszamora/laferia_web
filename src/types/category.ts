@@ -40,4 +40,13 @@ export type CategoriesResponse = {
   error?: string;
 };
 
+export type CategoryWithDetails = {
+  categoryId: string;
+  name: string;
+  description?: string;
+  slug?: string;
+  imageUrl?: string;
+  // Add any other fields that your categories have
+};
+
 export type { Category };

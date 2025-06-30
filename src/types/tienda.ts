@@ -42,5 +42,29 @@ export type TiendasTableParams = {
   sortOrder?: "asc" | "desc";
 };
 
+export type TiendaPaginationInfo = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+};
+
+export type TiendasResponse = {
+  success: boolean;
+  data?: TiendaWithDetails[];
+  pagination?: TiendaPaginationInfo;
+  error?: string;
+};
+
+export type TiendasStats = {
+  total: number;
+  activas: number;
+  pendientes: number;
+  inactivas: number;
+  suspendidas: number;
+};
+
 export { TiendaStatus };
 export type { Tienda };
