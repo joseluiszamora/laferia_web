@@ -6,19 +6,19 @@ import { revalidatePath } from "next/cache";
 
 export async function getCategories() {
   try {
-    const categories = await prisma.category.findMany({
+    const categories = await prisma.Category.findMany({
       include: {
-        parentCategory: true,
-        subcategories: true,
+        // parentCategory: true,
+        // subcategories: true,
         _count: {
           select: {
-            products: true,
-            subcategories: true,
+            // products: true,
+            // subcategories: true,
           },
         },
       },
       orderBy: {
-        createdAt: "desc",
+        // createdAt: "desc",
       },
     });
     return { success: true, data: categories };
@@ -30,7 +30,7 @@ export async function getCategories() {
 
 export async function getCategoryTree() {
   try {
-    const categories = await prisma.category.findMany({
+    const categories = await prisma.Category.findMany({
       include: {
         subcategories: {
           include: {
@@ -45,7 +45,7 @@ export async function getCategoryTree() {
         },
       },
       where: {
-        parentCategoryId: null,
+        parent_category_id: null,
       },
       orderBy: {
         name: "asc",
@@ -61,7 +61,7 @@ export async function getCategoryTree() {
 export async function createCategory(data: CategoryFormData) {
   try {
     // Validar que el slug no exista
-    const existingSlug = await prisma.category.findUnique({
+    const existingSlug = await prisma.Category.findUnique({
       where: { slug: data.slug },
     });
 
@@ -70,7 +70,7 @@ export async function createCategory(data: CategoryFormData) {
     }
 
     // Validar que el nombre no exista
-    const existingName = await prisma.category.findUnique({
+    const existingName = await prisma.Category.findUnique({
       where: { name: data.name },
     });
 
@@ -80,8 +80,8 @@ export async function createCategory(data: CategoryFormData) {
 
     // Validar categoría padre si se especifica
     if (data.parentCategoryId) {
-      const parentExists = await prisma.category.findUnique({
-        where: { categoryId: data.parentCategoryId },
+      const parentExists = await prisma.Category.findUnique({
+        where: { category_id: data.parentCategoryId },
       });
 
       if (!parentExists) {
@@ -89,22 +89,22 @@ export async function createCategory(data: CategoryFormData) {
       }
     }
 
-    const category = await prisma.category.create({
+    const category = await prisma.Category.create({
       data: {
         name: data.name,
         slug: data.slug,
         description: data.description,
         icon: data.icon,
         color: data.color,
-        imageUrl: data.imageUrl,
-        parentCategoryId: data.parentCategoryId,
+        // imageUrl: data.imageUrl,
+        parent_category_id: data.parentCategoryId,
       },
       include: {
-        parentCategory: true,
+        // parentCategory: true,
         _count: {
           select: {
-            products: true,
-            subcategories: true,
+            // products: true,
+            // subcategories: true,
           },
         },
       },
@@ -121,8 +121,8 @@ export async function createCategory(data: CategoryFormData) {
 export async function updateCategory(id: string, data: CategoryFormData) {
   try {
     // Validar que la categoría existe
-    const existingCategory = await prisma.category.findUnique({
-      where: { categoryId: id },
+    const existingCategory = await prisma.Category.findUnique({
+      where: { category_id: id },
     });
 
     if (!existingCategory) {
@@ -131,7 +131,7 @@ export async function updateCategory(id: string, data: CategoryFormData) {
 
     // Validar que el slug no exista en otra categoría
     if (data.slug !== existingCategory.slug) {
-      const existingSlug = await prisma.category.findUnique({
+      const existingSlug = await prisma.Category.findUnique({
         where: { slug: data.slug },
       });
 
@@ -142,7 +142,7 @@ export async function updateCategory(id: string, data: CategoryFormData) {
 
     // Validar que el nombre no exista en otra categoría
     if (data.name !== existingCategory.name) {
-      const existingName = await prisma.category.findUnique({
+      const existingName = await prisma.Category.findUnique({
         where: { name: data.name },
       });
 
@@ -153,8 +153,8 @@ export async function updateCategory(id: string, data: CategoryFormData) {
 
     // Validar categoría padre si se especifica
     if (data.parentCategoryId && data.parentCategoryId !== id) {
-      const parentExists = await prisma.category.findUnique({
-        where: { categoryId: data.parentCategoryId },
+      const parentExists = await prisma.Category.findUnique({
+        where: { category_id: data.parentCategoryId },
       });
 
       if (!parentExists) {
@@ -162,24 +162,24 @@ export async function updateCategory(id: string, data: CategoryFormData) {
       }
     }
 
-    const category = await prisma.category.update({
-      where: { categoryId: id },
+    const category = await prisma.Category.update({
+      where: { category_id: id },
       data: {
         name: data.name,
         slug: data.slug,
         description: data.description,
         icon: data.icon,
         color: data.color,
-        imageUrl: data.imageUrl,
-        parentCategoryId:
+        // imageUrl: data.imageUrl,
+        parent_category_id:
           data.parentCategoryId === id ? null : data.parentCategoryId,
       },
       include: {
-        parentCategory: true,
+        // parentCategory: true,
         _count: {
           select: {
-            products: true,
-            subcategories: true,
+            // products: true,
+            // subcategories: true,
           },
         },
       },
@@ -196,13 +196,13 @@ export async function updateCategory(id: string, data: CategoryFormData) {
 export async function deleteCategory(id: string) {
   try {
     // Verificar que la categoría existe
-    const category = await prisma.category.findUnique({
-      where: { categoryId: id },
+    const category = await prisma.Category.findUnique({
+      where: { category_id: id },
       include: {
         _count: {
           select: {
-            products: true,
-            subcategories: true,
+            // products: true,
+            // subcategories: true,
           },
         },
       },
@@ -213,24 +213,24 @@ export async function deleteCategory(id: string) {
     }
 
     // Verificar si tiene productos asociados
-    if (category._count.products > 0) {
-      return {
-        success: false,
-        error:
-          "No se puede eliminar la categoría porque tiene productos asociados",
-      };
-    }
+    // if (category._count.products > 0) {
+    //   return {
+    //     success: false,
+    //     error:
+    //       "No se puede eliminar la categoría porque tiene productos asociados",
+    //   };
+    // }
 
-    // Verificar si tiene subcategorías
-    if (category._count.subcategories > 0) {
-      return {
-        success: false,
-        error: "No se puede eliminar la categoría porque tiene subcategorías",
-      };
-    }
+    // // Verificar si tiene subcategorías
+    // if (category._count.subcategories > 0) {
+    //   return {
+    //     success: false,
+    //     error: "No se puede eliminar la categoría porque tiene subcategorías",
+    //   };
+    // }
 
-    await prisma.category.delete({
-      where: { categoryId: id },
+    await prisma.Category.delete({
+      where: { category_id: id },
     });
 
     revalidatePath("/admin/categorias");
