@@ -4,7 +4,7 @@ export type CategoryWithSubcategories = Category & {
   subcategories: Category[];
   parentCategory: Category | null;
   _count?: {
-    productos: number;
+    products: number;
     subcategories: number;
   };
 };
@@ -16,7 +16,7 @@ export type CategoryFormData = {
   icon?: string;
   color?: string;
   imageUrl?: string;
-  parentCategoryId?: string;
+  parentCategoryId?: number;
 };
 
 export type CategoryTreeNode = Category & {
@@ -41,7 +41,7 @@ export type CategoriesResponse = {
 };
 
 export type CategoryWithDetails = {
-  categoryId: string;
+  categoryId: number;
   name: string;
   description?: string;
   slug?: string;

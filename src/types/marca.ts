@@ -1,9 +1,9 @@
-import { Marca, Producto } from "@prisma/client";
+import { Brand, Product } from "@prisma/client";
 
-export type MarcaWithProducts = Marca & {
-  productos: Producto[];
+export type MarcaWithProducts = Brand & {
+  products: Product[];
   _count?: {
-    productos: number;
+    products: number;
   };
 };
 
@@ -21,8 +21,8 @@ export type MarcasTableParams = {
   limit?: number;
   search?: string;
   isActive?: boolean;
-  sortBy?: "name" | "createdAt" | "productos";
+  sortBy?: "name" | "createdAt" | "products";
   sortOrder?: "asc" | "desc";
 };
 
-export type { Marca };
+export type { Brand };

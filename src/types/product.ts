@@ -1,20 +1,20 @@
 import {
-  Producto,
-  ProductoAtributos,
-  ProductoMedias,
+  Product,
+  ProductAttributes,
+  ProductMedias,
   Category,
-  Marca,
+  Brand,
   ProductStatus,
   MediaType,
 } from "@prisma/client";
 
-export type ProductWithDetails = Producto & {
-  categoria: Category;
-  marca?: Marca | null;
-  atributos: ProductoAtributos[];
-  medias: ProductoMedias[];
+export type ProductWithDetails = Product & {
+  category: Category;
+  brand?: Brand | null;
+  attributes: ProductAttributes[];
+  medias: ProductMedias[];
   _count?: {
-    atributos: number;
+    attributes: number;
     medias: number;
   };
 };
@@ -38,9 +38,9 @@ export type ProductFormData = {
     height: number;
     depth: number;
   };
-  categoriaId: string;
-  marcaId?: string;
-  tiendaId?: string;
+  categoryId: number;
+  brandId?: number;
+  storeId?: number;
   status: ProductStatus;
   isAvailable: boolean;
   isFeatured: boolean;
@@ -77,9 +77,9 @@ export type ProductsTableParams = {
   page?: number;
   limit?: number;
   search?: string;
-  categoriaId?: string;
-  marcaId?: string;
-  tiendaId?: string;
+  categoryId?: number;
+  brandId?: number;
+  storeId?: number;
   status?: ProductStatus;
   isAvailable?: boolean;
   isFeatured?: boolean;
@@ -112,4 +112,4 @@ export type ProductsStats = {
 };
 
 export { ProductStatus, MediaType };
-export type { Producto, ProductoAtributos, ProductoMedias };
+export type { Product, ProductAttributes, ProductMedias };

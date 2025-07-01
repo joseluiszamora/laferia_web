@@ -1,44 +1,40 @@
-import { Tienda, TiendaStatus, Category } from "@prisma/client";
+import { Store, StoreStatus, Category } from "@prisma/client";
 
-export type TiendaWithDetails = Tienda & {
-  categoria: Category;
+export type TiendaWithDetails = Store & {
+  category: Category;
   _count?: {
-    productos: number;
-    comentarios: number;
+    products: number;
+    comments: number;
   };
 };
 
 export type TiendaFormData = {
-  nombre: string;
+  name: string;
   slug: string;
-  nombrePropietario: string;
+  ownerName: string;
   email?: string;
-  telefono?: string;
+  phone?: string;
   whatsapp?: string;
-  latitud: number;
-  longitud: number;
-  categoriaId: string;
-  contacto?: Record<string, unknown>;
-  direccion?: string;
-  diasAtencion: string[];
-  horarioAtencion?: string;
-  status: TiendaStatus;
+  latitude: number;
+  longitude: number;
+  categoryId: number;
+  contact?: Record<string, unknown>;
+  address?: string;
+  daysAttention: string[];
+  openingHours?: string;
+  status: StoreStatus;
   logoUrl?: string;
   bannerUrl?: string;
-  descripcion?: string;
+  description?: string;
 };
 
 export type TiendasTableParams = {
   page?: number;
   limit?: number;
   search?: string;
-  categoriaId?: string;
-  status?: TiendaStatus;
-  sortBy?:
-    | "nombre"
-    | "calificacionPromedio"
-    | "totalComentarios"
-    | "fechaRegistro";
+  categoryId?: number;
+  status?: StoreStatus;
+  sortBy?: "name" | "averageRating" | "totalComments" | "createdAt";
   sortOrder?: "asc" | "desc";
 };
 
@@ -60,11 +56,11 @@ export type TiendasResponse = {
 
 export type TiendasStats = {
   total: number;
-  activas: number;
-  pendientes: number;
-  inactivas: number;
-  suspendidas: number;
+  active: number;
+  pending: number;
+  inactive: number;
+  suspend: number;
 };
 
-export { TiendaStatus };
-export type { Tienda };
+export { StoreStatus };
+export type { Store };
