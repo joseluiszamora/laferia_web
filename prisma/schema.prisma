@@ -10,12 +10,20 @@ datasource db {
   extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions")]
 }
 
-// ENUMS para mejor validación de datos
+enum StoreStatus {
+  ACTIVE   @map("active")
+  INACTIVE @map("inactive")
+  PENDING  @map("pending")
+  SUSPEND  @map("suspend")
+
+  @@map("store_status")
+}
+
 enum ProductStatus {
-  BORRADOR  @map("borrador")
-  PUBLICADO @map("publicado")
-  ARCHIVADO @map("archivado")
-  AGOTADO   @map("agotado")
+  DRAFT     @map("draft")
+  PUBLISHED @map("published")
+  ARCHIVED  @map("archived")
+  EXHAUSTED @map("exhausted")
 
   @@map("product_status")
 }
@@ -28,19 +36,9 @@ enum MediaType {
   @@map("media_type")
 }
 
-enum TiendaStatus {
-  ACTIVA     @map("activa")
-  INACTIVA   @map("inactiva")
-  PENDIENTE  @map("pendiente")
-  SUSPENDIDA @map("suspendida")
-
-  @@map("tienda_status")
-}
-
-// MODELO: Categories (Mejorado con auto-relación)
 model Category {
-  categoryId       String   @id @default(dbgenerated("gen_random_uuid()")) @map("category_id") @db.Uuid
-  parentCategoryId String?  @map("parent_category_id") @db.Uuid
+  categoryId       Int      @id @default(autoincrement()) @map("category_id")
+  parentCategoryId Int?     @map("parent_category_id")
   name             String   @unique @db.VarChar(255)
   slug             String   @unique @db.VarChar(255)
   description      String?  @db.Text
@@ -55,10 +53,9 @@ model Category {
   // Auto-relación para jerarquías
   parentCategory Category?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [categoryId], onDelete: Cascade)
   subcategories  Category[] @relation("CategoryHierarchy")
-
   // Relaciones con otras entidades
-  productos Producto[]
-  tiendas   Tienda[]
+  products       Product[]
+  stores         Store[]
 
   @@index([name], map: "idx_category_name")
   @@index([parentCategoryId], map: "idx_category_parent_id")
@@ -68,76 +65,45 @@ model Category {
   @@map("Category")
 }
 
-// MODELO: Marcas (Nuevo - mejora la estructura)
-model Marca {
-  marcaId     String   @id @default(dbgenerated("gen_random_uuid()")) @map("marca_id") @db.Uuid
-  name        String   @unique @db.VarChar(255)
-  slug        String   @unique @db.VarChar(255)
-  description String?  @db.Text
-  logoUrl     String?  @map("logo_url") @db.Text
-  websiteUrl  String?  @map("website_url") @db.Text
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+model Store {
+  storeId       Int         @id @default(autoincrement()) @map("store_id")
+  name          String      @db.VarChar(255)
+  slug          String      @unique @db.VarChar(255)
+  ownerName     String      @map("owner_name") @db.VarChar(255)
+  email         String?     @db.VarChar(255)
+  phone         String?     @db.VarChar(50)
+  whatsapp      String?     @db.VarChar(50)
+  latitude      Float
+  longitude     Float
+  categoryId    Int         @map("category_id")
+  contact       Json?
+  address       String?     @db.Text
+  daysAttention String[]    @default(["thursday", "sunday"]) @map("days_attention")
+  openingHours  String?     @default("08:00 - 18:00") @map("opening_hours") @db.VarChar(50)
+  averageRating Decimal?    @default(0.00) @map("average_rating") @db.Decimal(3, 2)
+  totalComments Int         @default(0) @map("total_comments")
+  status        StoreStatus @default(PENDING)
+  logoUrl       String?     @map("logo_url") @db.Text
+  bannerUrl     String?     @map("banner_url") @db.Text
+  description   String?     @db.Text
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relaciones
-  productos Producto[]
+  category Category  @relation(fields: [categoryId], references: [categoryId], onUpdate: NoAction)
+  comments Comment[]
+  products Product[]
 
-  @@index([name], map: "idx_marca_name")
-  @@index([slug], map: "idx_marca_slug")
-  @@index([isActive], map: "idx_marca_active")
-  @@map("Marca")
+  @@index([name], map: "idx_store_name")
+  @@index([slug], map: "idx_store_slug")
+  @@index([latitude, longitude], map: "idx_store_location")
+  @@index([categoryId], map: "idx_store_category_id")
+  @@index([status], map: "idx_store_status")
+  @@map("Store")
 }
 
-// MODELO: Tienda (Mejorado)
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Tienda {
-  tiendaId             String       @id @default(dbgenerated("gen_random_uuid()")) @map("tienda_id") @db.Uuid
-  nombre               String       @db.VarChar(255)
-  slug                 String       @unique @db.VarChar(255)
-  nombrePropietario    String       @map("nombre_propietario") @db.VarChar(255)
-  email                String?      @db.VarChar(255)
-  telefono             String?      @db.VarChar(50)
-  whatsapp             String?      @db.VarChar(50)
-  latitud              Float
-  longitud             Float
-  categoriaId          String       @map("categoria_id") @db.Uuid
-  contacto             Json?
-  direccion            String?      @db.Text
-  diasAtencion         String[]     @default(["Jueves", "Domingo"]) @map("dias_atencion")
-  horarioAtencion      String?      @default("08:00 - 18:00") @map("horario_atencion") @db.VarChar(50)
-  calificacionPromedio Decimal?     @default(0.00) @map("calificacion_promedio") @db.Decimal(3, 2)
-  totalComentarios     Int          @default(0) @map("total_comentarios")
-  status               TiendaStatus @default(PENDIENTE)
-  logoUrl              String?      @map("logo_url") @db.Text
-  bannerUrl            String?      @map("banner_url") @db.Text
-  descripcion          String?      @db.Text
-  fechaRegistro        DateTime     @default(now()) @map("fecha_registro") @db.Timestamptz(6)
-  fechaActualizacion   DateTime     @default(now()) @updatedAt @map("fecha_actualizacion") @db.Timestamptz(6)
-
-  // Relaciones
-  categoria   Category     @relation(fields: [categoriaId], references: [categoryId], onUpdate: NoAction)
-  comentarios Comentario[]
-  productos   Producto[]
-
-  @@index([status], map: "idx_tienda_status")
-  @@index([calificacionPromedio], map: "idx_tienda_calificacion")
-  @@index([categoriaId], map: "idx_tienda_categoria")
-  @@index([nombre], map: "idx_tienda_nombre")
-  @@index([nombrePropietario], map: "idx_tienda_propietario")
-  @@index([latitud, longitud], map: "idx_tienda_ubicacion")
-  @@index([slug], map: "idx_tienda_slug")
-  @@index([email], map: "idx_tienda_email")
-  @@map("Tienda")
-}
-
-// MODELO: Producto (Mejorado significativamente)
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Producto {
-  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+model Product {
+  productId        Int           @id @default(autoincrement()) @map("product_id")
   name             String        @db.VarChar(255)
   slug             String        @unique @db.VarChar(255)
   description      String        @db.Text
@@ -152,10 +118,10 @@ model Producto {
   lowStockAlert    Int           @default(5) @map("low_stock_alert")
   weight           Decimal?      @db.Decimal(8, 2) // en kg
   dimensions       Json? // {width: 10, height: 20, depth: 30} en cm
-  categoriaId      String        @map("categoria_id") @db.Uuid
-  marcaId          String?       @map("marca_id") @db.Uuid
-  tiendaId         String?       @map("tienda_id") @db.Uuid
-  status           ProductStatus @default(BORRADOR)
+  categoryId       Int           @map("category_id")
+  brandId          Int?          @map("brand_id")
+  storeId          Int           @map("store_id")
+  status           ProductStatus @default(DRAFT)
   isAvailable      Boolean       @default(true) @map("is_available")
   isFeatured       Boolean       @default(false) @map("is_featured")
   metaTitle        String?       @map("meta_title") @db.VarChar(255)
@@ -167,123 +133,107 @@ model Producto {
   updatedAt        DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relaciones
-  categoria Category            @relation(fields: [categoriaId], references: [categoryId], onUpdate: NoAction)
-  marca     Marca?              @relation(fields: [marcaId], references: [marcaId], onUpdate: NoAction)
-  tienda    Tienda?             @relation(fields: [tiendaId], references: [tiendaId], onUpdate: NoAction)
-  atributos ProductoAtributos[]
-  medias    ProductoMedias[]
+  category   Category            @relation(fields: [categoryId], references: [categoryId], onUpdate: NoAction)
+  brand      Brand?              @relation(fields: [brandId], references: [brandId], onUpdate: NoAction)
+  store      Store               @relation(fields: [storeId], references: [storeId], onUpdate: NoAction)
+  attributes ProductAttributes[]
+  medias     ProductMedias[]
 
-  @@index([isAvailable], map: "idx_producto_available")
-  @@index([categoriaId], map: "idx_producto_categoria")
-  @@index([categoriaId, status, isAvailable], map: "idx_producto_categoria_status_available")
-  @@index([createdAt], map: "idx_producto_created_at")
-  @@index([marcaId], map: "idx_producto_marca")
-  @@index([tiendaId], map: "idx_producto_tienda")
-  @@index([name], map: "idx_producto_name")
-  @@index([price], map: "idx_producto_price")
-  @@index([slug], map: "idx_producto_slug")
-  @@index([status], map: "idx_producto_status")
-  @@index([sku], map: "idx_producto_sku")
-  @@index([barcode], map: "idx_producto_barcode")
-  @@index([isFeatured], map: "idx_producto_featured")
-  @@index([stock], map: "idx_producto_stock")
-  @@index([viewCount], map: "idx_producto_view_count")
-  @@index([saleCount], map: "idx_producto_sale_count")
-  @@map("Producto")
+  @@index([name], map: "idx_product_name")
+  @@index([slug], map: "idx_product_slug")
+  @@index([categoryId], map: "idx_product_category_id")
+  @@index([brandId], map: "idx_product_brand_id")
+  @@index([storeId], map: "idx_product_store_id")
+  @@index([status], map: "idx_product_status")
+  @@index([isAvailable], map: "idx_product_available")
+  @@index([isFeatured], map: "idx_product_featured")
+  @@index([sku], map: "idx_product_sku")
+  @@index([barcode], map: "idx_product_barcode")
+  @@map("Product")
 }
 
-// MODELO: ProductoAtributos (Mejorado)
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model ProductoAtributos {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  productoId String   @map("producto_id") @db.Uuid
-  nombre     String   @db.VarChar(100)
-  valor      String   @db.VarChar(255)
-  tipo       String?  @default("text") @db.VarChar(50) // text, number, boolean, color, size, etc.
-  unidad     String?  @db.VarChar(20) // kg, cm, litros, etc.
-  orden      Int      @default(0)
-  isVisible  Boolean  @default(true) @map("is_visible")
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+model Brand {
+  brandId     Int      @id @default(autoincrement()) @map("brand_id")
+  name        String   @unique @db.VarChar(255)
+  slug        String   @unique @db.VarChar(255)
+  description String?  @db.Text
+  logoUrl     String?  @map("logo_url") @db.Text
+  websiteUrl  String?  @map("website_url") @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relaciones
-  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  products Product[]
 
-  @@unique([productoId, nombre], map: "unique_producto_atributo")
-  @@index([nombre], map: "idx_producto_atributos_nombre")
-  @@index([nombre, valor], map: "idx_producto_atributos_nombre_valor")
-  @@index([productoId], map: "idx_producto_atributos_producto_id")
-  @@index([tipo], map: "idx_producto_atributos_tipo")
-  @@index([orden], map: "idx_producto_atributos_orden")
-  @@map("ProductoAtributos")
+  @@index([name], map: "idx_brand_name")
+  @@index([slug], map: "idx_brand_slug")
+  @@index([isActive], map: "idx_brand_active")
+  @@map("Brand")
 }
 
-// MODELO: ProductoMedias (Mejorado significativamente)
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model ProductoMedias {
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  productoId   String    @map("producto_id") @db.Uuid
-  type         MediaType @default(IMAGE)
-  url          String    @db.Text
-  thumbnailUrl String?   @map("thumbnail_url") @db.Text
-  width        Int?
-  height       Int?
-  fileSize     BigInt?   @map("file_size") // en bytes
-  duration     Int? // para videos, en segundos
-  orden        Int       @default(0)
-  isMain       Boolean   @default(false) @map("is_main")
-  isActive     Boolean   @default(true) @map("is_active")
-  descripcion  String?   @db.Text
-  altText      String?   @map("alt_text") @db.VarChar(255)
-  metadata     Json? // información adicional como exif, etc.
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+model ProductAttributes {
+  productAttributesId Int      @id @default(autoincrement()) @map("product_attributes_id")
+  productId           Int      @map("product_id")
+  name                String   @db.VarChar(100)
+  value               String   @db.VarChar(255)
+  type                String?  @default("text") @db.VarChar(50) // text, number, boolean, color, size, etc.
+  unity               String?  @db.VarChar(20) // kg, cm, litros, etc.
+  order               Int      @default(0)
+  isVisible           Boolean  @default(true) @map("is_visible")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   // Relaciones
-  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  product Product @relation(fields: [productId], references: [productId], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([isActive], map: "idx_producto_medias_active")
-  @@index([isMain], map: "idx_producto_medias_main")
-  @@index([orden], map: "idx_producto_medias_orden")
-  @@index([productoId], map: "idx_producto_medias_producto_id")
-  @@index([type], map: "idx_producto_medias_type")
-  @@index([productoId, isMain], map: "idx_producto_medias_producto_main")
-  @@index([productoId, isActive, orden], map: "idx_producto_medias_producto_active_orden")
-  @@map("ProductoMedias")
+  @@map("ProductAttributes")
 }
 
-// MODELO: Comentario (Mejorado)
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Comentario {
-  comentarioId       String    @id @default(dbgenerated("gen_random_uuid()")) @map("comentario_id") @db.Uuid
-  tiendaId           String    @map("tienda_id") @db.Uuid
-  nombreUsuario      String    @map("nombre_usuario") @db.VarChar(255)
-  emailUsuario       String?   @map("email_usuario") @db.VarChar(255)
-  avatarUrl          String?   @map("avatar_url") @db.Text
-  comentario         String    @db.Text
-  calificacion       Decimal   @db.Decimal(2, 1)
-  fechaCreacion      DateTime  @default(now()) @map("fecha_creacion") @db.Timestamptz(6)
-  fechaActualizacion DateTime? @map("fecha_actualizacion") @db.Timestamptz(6)
-  verificado         Boolean   @default(false)
-  imagenes           String[]  @default([])
-  respuesta          String?   @db.Text // respuesta de la tienda
-  fechaRespuesta     DateTime? @map("fecha_respuesta") @db.Timestamptz(6)
-  activo             Boolean   @default(true)
-  ipAddress          String?   @map("ip_address") @db.VarChar(45)
-  userAgent          String?   @map("user_agent") @db.Text
+model ProductMedias {
+  productMediasId Int       @id @default(autoincrement()) @map("product_medias_id")
+  productId       Int       @map("product_id")
+  type            MediaType @default(IMAGE)
+  url             String    @db.Text
+  thumbnailUrl    String?   @map("thumbnail_url") @db.Text
+  width           Int?
+  height          Int?
+  fileSize        BigInt?   @map("file_size") // en bytes
+  duration        Int? // para videos, en segundos
+  order           Int       @default(0)
+  isMain          Boolean   @default(false) @map("is_main")
+  isActive        Boolean   @default(true) @map("is_active")
+  description     String?   @db.Text
+  altText         String?   @map("alt_text") @db.VarChar(255)
+  metadata        Json? // información adicional como exif, etc.
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relaciones
-  tienda Tienda @relation(fields: [tiendaId], references: [tiendaId], onDelete: Cascade, onUpdate: NoAction)
+  product Product @relation(fields: [productId], references: [productId], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([calificacion], map: "idx_comentario_calificacion")
-  @@index([fechaCreacion], map: "idx_comentario_fecha")
-  @@index([tiendaId], map: "idx_comentario_tienda")
-  @@index([verificado], map: "idx_comentario_verificado")
-  @@index([activo], map: "idx_comentario_activo")
-  @@index([tiendaId, activo, fechaCreacion], map: "idx_comentario_tienda_activo_fecha")
-  @@index([emailUsuario], map: "idx_comentario_email")
-  @@map("Comentario")
+  @@map("ProductMedias")
+}
+
+model Comment {
+  commentId Int       @id @default(autoincrement()) @map("comment_id")
+  storeId   Int       @map("store_id")
+  userName  String    @map("user_name") @db.VarChar(255)
+  userEmail String?   @map("user_email") @db.VarChar(255)
+  avatarUrl String?   @map("avatar_url") @db.Text
+  comment   String    @db.Text
+  rating    Decimal   @db.Decimal(2, 1)
+  approved  Boolean   @default(false)
+  images    String[]  @default([])
+  answer    String?   @db.Text // respuesta de la tienda
+  answerAt  DateTime? @map("answer_at") @db.Timestamptz(6)
+  isActive  Boolean   @default(true) @map("is_active")
+  ipAddress String?   @map("ip_address") @db.VarChar(45)
+  userAgent String?   @map("user_agent") @db.Text
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relaciones
+  store Store @relation(fields: [storeId], references: [storeId], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("Comment")
 }
