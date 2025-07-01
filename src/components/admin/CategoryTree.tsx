@@ -74,7 +74,7 @@ export function CategoryTree() {
 
             {category.color && (
               <div
-                className="w-3 h-3 rounded-full mr-3 border border-gray-300"
+                className="w-3 h-3 rounded-full mr-3 border border-gray-300 dark:border-gray-600"
                 style={{ backgroundColor: category.color }}
               />
             )}
@@ -83,10 +83,12 @@ export function CategoryTree() {
               <span className="mr-2 text-sm">{category.icon}</span>
             )}
 
-            <span className="font-medium text-gray-900">{category.name}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">
+              {category.name}
+            </span>
 
             <div className="flex items-center ml-auto space-x-4">
-              <div className="flex items-center text-xs text-gray-500">
+              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                 <Package className="h-3 w-3 mr-1" />
                 {category._count?.productos || 0}
               </div>
