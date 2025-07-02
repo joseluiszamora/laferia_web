@@ -215,6 +215,9 @@ export function CategoriesTable() {
           <thead className="">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Id
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Categoría
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -243,6 +246,9 @@ export function CategoriesTable() {
           <tbody className="divide-y divide-gray-200">
             {categories.map((category) => (
               <tr key={category.categoryId} className="hover:bg-gray-100">
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  {category.categoryId}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div>
