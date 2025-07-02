@@ -1,7 +1,7 @@
 import { Category } from "@prisma/client";
 
 export type CategoryWithSubcategories = Category & {
-  subcategories: Category[];
+  subcategories: Pick<Category, "categoryId" | "name" | "slug">[];
   parentCategory: Category | null;
   _count?: {
     products: number;

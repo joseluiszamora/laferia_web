@@ -1,5 +1,15 @@
+"use client";
+
 import { useState, useEffect } from "react";
-import { X, FolderTree, Save, Loader2 } from "lucide-react";
+import {
+  X,
+  FolderTree,
+  Save,
+  Loader2,
+  Palette,
+  ImageIcon,
+  Hash,
+} from "lucide-react";
 import { CategoryWithSubcategories, CategoryFormData } from "@/types/category";
 import { updateCategory, getCategories } from "@/actions/categories";
 
@@ -17,34 +27,40 @@ export function EditCategoryModal({
   onCategoryUpdated,
 }: EditCategoryModalProps) {
   const [formData, setFormData] = useState<CategoryFormData>({
-    name: category?.name || "",
-    slug: category?.slug || "",
-    description: category?.description || "",
-    icon: category?.icon || "",
-    color: category?.color || "",
-    imageUrl: category?.imageUrl || "",
-    parentCategoryId: category?.parentCategoryId || "",
+    name: "",
+    slug: "",
+    description: "",
+    icon: "",
+    color: "",
+    imageUrl: "",
+    parentCategoryId: undefined,
   });
   const [loading, setLoading] = useState(false);
   const [availableCategories, setAvailableCategories] = useState<
     CategoryWithSubcategories[]
   >([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Cargar categorías para el selector de padre
   const loadCategories = async () => {
     setLoadingCategories(true);
-    const result = await getCategories();
-    if (result.success) {
-      // Filtrar la categoría actual y sus descendientes para evitar ciclos
-      const filtered = (result.data || []).filter(
-        (cat) =>
-          cat.categoryId !== category?.categoryId &&
-          cat.parentCategoryId !== category?.categoryId
-      );
-      setAvailableCategories(filtered);
+    try {
+      const result = await getCategories();
+      if (result.success) {
+        // Filtrar la categoría actual y sus descendientes para evitar ciclos
+        const filtered = (result.data || []).filter(
+          (cat) =>
+            cat.categoryId !== category?.categoryId &&
+            cat.parentCategoryId !== category?.categoryId
+        );
+        setAvailableCategories(filtered as CategoryWithSubcategories[]);
+      }
+    } catch (err) {
+      console.error("Error loading categories:", err);
+    } finally {
+      setLoadingCategories(false);
     }
-    setLoadingCategories(false);
   };
 
   // Cargar categorías cuando se abre el modal
@@ -57,8 +73,9 @@ export function EditCategoryModal({
         icon: category.icon || "",
         color: category.color || "",
         imageUrl: category.imageUrl || "",
-        parentCategoryId: category.parentCategoryId || "",
+        parentCategoryId: category.parentCategoryId || undefined,
       });
+      setError(null);
       loadCategories();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -83,236 +100,247 @@ export function EditCategoryModal({
     }));
   };
 
+  const handleInputChange = (
+    field: keyof CategoryFormData,
+    value: string | number | undefined
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!category) return;
 
     setLoading(true);
-    const result = await updateCategory(category.categoryId, formData);
+    setError(null);
 
-    if (result.success) {
-      onCategoryUpdated();
-      onClose();
-    } else {
-      alert(result.error || "Error al actualizar la categoría");
+    try {
+      const result = await updateCategory(category.categoryId, formData);
+
+      if (result.success) {
+        onCategoryUpdated();
+        onClose();
+      } else {
+        setError(result.error || "Error al actualizar la categoría");
+      }
+    } catch (err) {
+      console.error("Error updating category:", err);
+      setError("Error inesperado al actualizar la categoría");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  if (!category || !isOpen) return null;
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-full items-center justify-center p-4">
-        {/* Backdrop */}
-        <div
-          className="fixed inset-0 bg-black bg-opacity-25 transition-opacity"
-          onClick={onClose}
-        />
-
-        {/* Modal */}
-        <div className="relative w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left shadow-xl transition-all">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium leading-6 text-gray-900 flex items-center">
-              <FolderTree className="h-5 w-5 mr-2 text-green-600" />
-              Editar Categoría
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              disabled={loading}
-            >
-              <X className="h-6 w-6" />
-            </button>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in-0 duration-300">
+      <div className="bg-background border border-border rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-xl animate-in slide-in-from-bottom-4 duration-300">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-border bg-accent/20">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <FolderTree className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">
+                Editar Categoría
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Modifica los datos de la categoría
+              </p>
+            </div>
           </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+            disabled={loading}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Nombre y Slug */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Nombre *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                  disabled={loading}
-                />
+        {/* Content */}
+        <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Error Message */}
+            {error && (
+              <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
+                {error}
               </div>
-              <div>
-                <label
-                  htmlFor="slug"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Slug *
-                </label>
-                <input
-                  type="text"
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, slug: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                  disabled={loading}
-                />
-              </div>
-            </div>
+            )}
 
-            {/* Descripción */}
-            <div>
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Descripción
-              </label>
-              <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={loading}
-              />
-            </div>
-
-            {/* Categoría Padre */}
-            <div>
-              <label
-                htmlFor="parentCategory"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Categoría Padre
-              </label>
-              <select
-                id="parentCategory"
-                value={formData.parentCategoryId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    parentCategoryId: e.target.value,
-                  }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={loading || loadingCategories}
-              >
-                <option value="">Sin categoría padre (Raíz)</option>
-                {availableCategories.map((cat) => (
-                  <option key={cat.categoryId} value={cat.categoryId}>
-                    {cat.parentCategory ? `${cat.parentCategory.name} → ` : ""}
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Icono y Color */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="icon"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Icono (Emoji)
-                </label>
-                <input
-                  type="text"
-                  id="icon"
-                  value={formData.icon}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, icon: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="📱"
-                  disabled={loading}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="color"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Color
-                </label>
-                <div className="flex space-x-2">
-                  <input
-                    type="color"
-                    id="color"
-                    value={formData.color}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        color: e.target.value,
-                      }))
-                    }
-                    className="w-12 h-10 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={loading}
-                  />
+            {/* Información Básica */}
+            <div className="bg-primary/5 rounded-lg p-6 border border-border">
+              <h3 className="text-lg font-medium text-foreground mb-4 flex items-center">
+                <Hash className="h-5 w-5 mr-2 text-primary" />
+                Información Básica
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                    Nombre
+                  </label>
                   <input
                     type="text"
-                    value={formData.color}
+                    value={formData.name}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                    placeholder="Nombre de la categoría"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                    Slug
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.slug}
+                    onChange={(e) => handleInputChange("slug", e.target.value)}
+                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                    placeholder="slug-categoria"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  Descripción
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    handleInputChange("description", e.target.value)
+                  }
+                  rows={3}
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring resize-none"
+                  placeholder="Descripción de la categoría (opcional)"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            {/* Configuración Visual */}
+            <div className="bg-accent/50 rounded-lg p-6 border border-border">
+              <h3 className="text-lg font-medium text-foreground mb-4 flex items-center">
+                <Palette className="h-5 w-5 mr-2 text-primary" />
+                Configuración Visual
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                    Icono
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.icon || ""}
+                    onChange={(e) => handleInputChange("icon", e.target.value)}
+                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                    placeholder="Nombre del icono (ej: ShoppingBag)"
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                    Color
+                  </label>
+                  <div className="flex space-x-2">
+                    <input
+                      type="color"
+                      value={formData.color || "#3B82F6"}
+                      onChange={(e) =>
+                        handleInputChange("color", e.target.value)
+                      }
+                      className="w-12 h-10 border border-input rounded-md cursor-pointer disabled:cursor-not-allowed"
+                      disabled={loading}
+                    />
+                    <input
+                      type="text"
+                      value={formData.color || ""}
+                      onChange={(e) =>
+                        handleInputChange("color", e.target.value)
+                      }
+                      className="flex-1 px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="#3B82F6"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Configuración Avanzada */}
+            <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-lg p-6 border border-border">
+              <h3 className="text-lg font-medium text-foreground mb-4 flex items-center">
+                <ImageIcon className="h-5 w-5 mr-2 text-primary" />
+                Configuración Avanzada
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                    Categoría Padre
+                  </label>
+                  <select
+                    value={formData.parentCategoryId || ""}
                     onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        color: e.target.value,
-                      }))
+                      handleInputChange(
+                        "parentCategoryId",
+                        e.target.value ? parseInt(e.target.value) : undefined
+                      )
                     }
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="#000000"
+                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                    disabled={loading || loadingCategories}
+                  >
+                    <option value="">Sin categoría padre</option>
+                    {availableCategories.map((cat) => (
+                      <option key={cat.categoryId} value={cat.categoryId}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                  {loadingCategories && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Cargando categorías...
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                    URL de Imagen
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.imageUrl || ""}
+                    onChange={(e) =>
+                      handleInputChange("imageUrl", e.target.value)
+                    }
+                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                    placeholder="https://ejemplo.com/imagen.jpg"
                     disabled={loading}
                   />
                 </div>
               </div>
             </div>
 
-            {/* URL de Imagen */}
-            <div>
-              <label
-                htmlFor="imageUrl"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                URL de Imagen
-              </label>
-              <input
-                type="url"
-                id="imageUrl"
-                value={formData.imageUrl}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="https://ejemplo.com/imagen.jpg"
-                disabled={loading}
-              />
-            </div>
-
             {/* Botones */}
-            <div className="flex justify-end space-x-3 pt-4">
+            <div className="flex justify-end space-x-3 pt-4 border-t border-border">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="px-4 py-2 border border-input rounded-md bg-background text-foreground text-sm font-medium hover:bg-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition-colors"
                 disabled={loading}
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-green-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                className="px-4 py-2 bg-primary border border-transparent rounded-md text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-colors"
                 disabled={loading}
               >
                 {loading ? (

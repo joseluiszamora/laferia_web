@@ -42,15 +42,15 @@ export function ProductDetailsModal({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PUBLISHED":
-        return "bg-green-100 text-green-800";
+        return "bg-success/10 text-success border-success/20";
       case "DRAFT":
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-muted-foreground border-border";
       case "ARCHIVED":
-        return "bg-purple-100 text-purple-800";
+        return "bg-info/10 text-info border-info/20";
       case "EXHAUSTED":
-        return "bg-red-100 text-red-800";
+        return "bg-destructive/10 text-destructive border-destructive/20";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-muted-foreground border-border";
     }
   };
 
@@ -74,27 +74,28 @@ export function ProductDetailsModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-card border border-border rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-            <Package className="h-5 w-5 mr-2 text-blue-500" />
+        <div className="flex items-center justify-between p-6 border-b border-border bg-card sticky top-0 z-10">
+          <h2 className="text-xl font-semibold text-card-foreground flex items-center">
+            <Package className="h-5 w-5 mr-2 text-primary" />
             Detalles del Producto
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-accent rounded-lg focus-ring"
+            aria-label="Cerrar modal"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : product ? (
             <div className="space-y-6">
@@ -102,41 +103,41 @@ export function ProductDetailsModal({
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    <h3 className="text-lg font-semibold text-card-foreground mb-3">
                       Información General
                     </h3>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-sm font-medium text-gray-500">
+                        <label className="text-sm font-medium text-muted-foreground">
                           Nombre
                         </label>
-                        <p className="text-gray-900 font-medium">
+                        <p className="text-foreground font-medium">
                           {product.name}
                         </p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-500">
+                        <label className="text-sm font-medium text-muted-foreground">
                           Slug
                         </label>
-                        <p className="text-gray-700 font-mono text-sm">
+                        <p className="text-muted-foreground font-mono text-sm bg-muted px-2 py-1 rounded">
                           {product.slug}
                         </p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-500">
+                        <label className="text-sm font-medium text-muted-foreground">
                           Descripción corta
                         </label>
-                        <p className="text-gray-700">
+                        <p className="text-foreground">
                           {product.shortDescription || "Sin descripción corta"}
                         </p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-500">
+                        <label className="text-sm font-medium text-muted-foreground">
                           Estado
                         </label>
                         <div className="mt-1">
                           <span
-                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                            className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(
                               product.status
                             )}`}
                           >

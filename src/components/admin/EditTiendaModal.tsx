@@ -1,9 +1,18 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { X, Save, Loader2 } from "lucide-react";
+import {
+  X,
+  Save,
+  Loader2,
+  Store,
+  User,
+  MapPin,
+  Clock,
+  Globe,
+} from "lucide-react";
 import { TiendaWithDetails, TiendaFormData } from "@/types/tienda";
-import { TiendaStatus } from "@prisma/client";
+import { StoreStatus } from "@prisma/client";
 import { getTiendaById, updateTienda } from "@/actions/tiendas";
 import { getCategories } from "@/actions/categories";
 import { CategoryWithSubcategories } from "@/types/category";
@@ -29,68 +38,74 @@ export function EditTiendaModal({
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<TiendaFormData>({
-    nombre: "",
+    name: "",
     slug: "",
-    nombrePropietario: "",
+    ownerName: "",
     email: "",
-    telefono: "",
+    phone: "",
     whatsapp: "",
-    latitud: 0,
-    longitud: 0,
-    categoriaId: "",
-    contacto: {},
-    direccion: "",
-    diasAtencion: [],
-    horarioAtencion: "",
-    status: "PENDIENTE",
+    latitude: 0,
+    longitude: 0,
+    categoryId: 0,
+    contact: {},
+    address: "",
+    daysAttention: [],
+    openingHours: "",
+    status: "PENDING",
     logoUrl: "",
     bannerUrl: "",
-    descripcion: "",
+    description: "",
   });
 
   const diasSemana = [
-    { value: "lunes", label: "Lunes" },
-    { value: "martes", label: "Martes" },
-    { value: "miercoles", label: "Miércoles" },
-    { value: "jueves", label: "Jueves" },
-    { value: "viernes", label: "Viernes" },
-    { value: "sabado", label: "Sábado" },
-    { value: "domingo", label: "Domingo" },
+    { label: "Lunes", value: "monday" },
+    { label: "Martes", value: "tuesday" },
+    { label: "Miércoles", value: "wednesday" },
+    { label: "Jueves", value: "thursday" },
+    { label: "Viernes", value: "friday" },
+    { label: "Sábado", value: "saturday" },
+    { label: "Domingo", value: "sunday" },
+  ];
+
+  const statusOptions = [
+    { label: "Pendiente", value: "PENDING" },
+    { label: "Activo", value: "ACTIVE" },
+    { label: "Inactivo", value: "INACTIVE" },
+    { label: "Suspendido", value: "SUSPEND" },
   ];
 
   const loadTiendaDetails = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
       const result = await getTiendaById(tiendaId);
       if (result.success && result.data) {
-        const tienda = result.data;
-        setTienda(tienda);
+        const tiendaData = result.data;
+        setTienda(tiendaData);
         setFormData({
-          nombre: tienda.nombre,
-          slug: tienda.slug,
-          nombrePropietario: tienda.nombrePropietario,
-          email: tienda.email || "",
-          telefono: tienda.telefono || "",
-          whatsapp: tienda.whatsapp || "",
-          latitud: tienda.latitud,
-          longitud: tienda.longitud,
-          categoriaId: tienda.categoriaId,
-          contacto: (tienda.contacto as Record<string, unknown>) || {},
-          direccion: tienda.direccion || "",
-          diasAtencion: tienda.diasAtencion,
-          horarioAtencion: tienda.horarioAtencion || "",
-          status: tienda.status,
-          logoUrl: tienda.logoUrl || "",
-          bannerUrl: tienda.bannerUrl || "",
-          descripcion: tienda.descripcion || "",
+          name: tiendaData.name,
+          slug: tiendaData.slug,
+          ownerName: tiendaData.ownerName,
+          email: tiendaData.email || "",
+          phone: tiendaData.phone || "",
+          whatsapp: tiendaData.whatsapp || "",
+          latitude: tiendaData.latitude,
+          longitude: tiendaData.longitude,
+          categoryId: tiendaData.categoryId,
+          contact: (tiendaData.contact as Record<string, unknown>) || {},
+          address: tiendaData.address || "",
+          daysAttention: tiendaData.daysAttention,
+          openingHours: tiendaData.openingHours || "",
+          status: tiendaData.status,
+          logoUrl: tiendaData.logoUrl || "",
+          bannerUrl: tiendaData.bannerUrl || "",
+          description: tiendaData.description || "",
         });
       } else {
         setError(result.error || "Error al cargar los detalles de la tienda");
       }
     } catch (err) {
-      console.error("Error al cargar la tienda:", err);
+      console.error("Error loading tienda details:", err);
       setError("Error inesperado al cargar la tienda");
     } finally {
       setLoading(false);
@@ -101,8 +116,8 @@ export function EditTiendaModal({
     setLoadingCategories(true);
     try {
       const result = await getCategories();
-      if (result.success && result.data) {
-        setCategories(result.data);
+      if (result.success) {
+        setCategories(result.data as CategoryWithSubcategories[]);
       }
     } catch (err) {
       console.error("Error loading categories:", err);
@@ -118,56 +133,51 @@ export function EditTiendaModal({
     }
   }, [isOpen, tiendaId, loadTiendaDetails, loadCategories]);
 
-  const generateSlug = (nombre: string) => {
-    return nombre
+  const generateSlug = (name: string) => {
+    return name
       .toLowerCase()
-      .replace(/[áàäâ]/g, "a")
-      .replace(/[éèëê]/g, "e")
-      .replace(/[íìïî]/g, "i")
-      .replace(/[óòöô]/g, "o")
-      .replace(/[úùüû]/g, "u")
-      .replace(/[ñ]/g, "n")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "");
+      .trim();
   };
 
   const handleInputChange = (
     field: keyof TiendaFormData,
-    value: string | number | string[] | Record<string, unknown>
+    value: string | number | StoreStatus
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const newData = { ...prev, [field]: value };
 
-    // Auto-generar slug cuando cambia el nombre
-    if (field === "nombre" && typeof value === "string") {
-      const newSlug = generateSlug(value);
-      setFormData((prev) => ({
-        ...prev,
-        slug: newSlug,
-      }));
-    }
+      // Auto-generar slug cuando cambia el nombre
+      if (field === "name" && typeof value === "string") {
+        newData.slug = generateSlug(value);
+      }
+
+      return newData;
+    });
   };
 
-  const handleDiasAtencionChange = (dia: string, checked: boolean) => {
+  const handleDayToggle = (dia: string) => {
     setFormData((prev) => ({
       ...prev,
-      diasAtencion: checked
-        ? [...prev.diasAtencion, dia]
-        : prev.diasAtencion.filter((d) => d !== dia),
+      daysAttention: prev.daysAttention.includes(dia)
+        ? prev.daysAttention.filter((d: string) => d !== dia)
+        : [...prev.daysAttention, dia],
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!tienda) return;
+
     setSaving(true);
     setError(null);
 
     try {
-      const result = await updateTienda(tiendaId, formData);
+      const result = await updateTienda(tienda.storeId.toString(), formData);
       if (result.success) {
         onSuccess();
         onClose();
@@ -175,7 +185,7 @@ export function EditTiendaModal({
         setError(result.error || "Error al actualizar la tienda");
       }
     } catch (err) {
-      console.error("Error al actualizar la tienda:", err);
+      console.error("Error updating tienda:", err);
       setError("Error inesperado al actualizar la tienda");
     } finally {
       setSaving(false);
@@ -185,331 +195,407 @@ export function EditTiendaModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in-0 duration-300">
+      <div className="bg-background border border-border rounded-lg w-full max-w-4xl max-h-[95vh] overflow-hidden shadow-xl animate-in slide-in-from-bottom-4 duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">Editar Tienda</h2>
+        <div className="flex items-center justify-between p-6 border-b border-border bg-accent/20">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Store className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">
+                Editar Tienda
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {tienda?.name || "Cargando..."}
+              </p>
+            </div>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2 hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+            disabled={saving}
           >
-            <X size={24} />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          {loading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="overflow-y-auto max-h-[calc(95vh-120px)]">
+          {loading ? (
+            <div className="flex items-center justify-center p-12">
+              <div className="text-center">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+                <p className="text-muted-foreground">
+                  Cargando datos de la tienda...
+                </p>
+              </div>
             </div>
-          )}
+          ) : (
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <p className="text-red-800">{error}</p>
-            </div>
-          )}
-
-          {tienda && (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Información básica */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre de la Tienda *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nombre}
-                    onChange={(e) =>
-                      handleInputChange("nombre", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Slug *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.slug}
-                    onChange={(e) => handleInputChange("slug", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre del Propietario *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nombrePropietario}
-                    onChange={(e) =>
-                      handleInputChange("nombrePropietario", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Estado *
-                  </label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "status",
-                        e.target.value as TiendaStatus
-                      )
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="PENDIENTE">Pendiente</option>
-                    <option value="ACTIVA">Activa</option>
-                    <option value="INACTIVA">Inactiva</option>
-                    <option value="SUSPENDIDA">Suspendida</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Información de contacto */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Teléfono
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.telefono}
-                    onChange={(e) =>
-                      handleInputChange("telefono", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    WhatsApp
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.whatsapp}
-                    onChange={(e) =>
-                      handleInputChange("whatsapp", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
-              {/* Categoría y ubicación */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Categoría *
-                  </label>
-                  <select
-                    value={formData.categoriaId}
-                    onChange={(e) =>
-                      handleInputChange("categoriaId", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="">Seleccionar categoría</option>
-                    {categories.map((category) => (
-                      <option
-                        key={category.categoryId}
-                        value={category.categoryId}
-                      >
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                  {loadingCategories && (
-                    <p className="text-sm text-gray-500 mt-1">
-                      Cargando categorías...
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Latitud *
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={formData.latitud}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "latitud",
-                        parseFloat(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Longitud *
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={formData.longitud}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "longitud",
-                        parseFloat(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Dirección */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Dirección
-                </label>
-                <input
-                  type="text"
-                  value={formData.direccion}
-                  onChange={(e) =>
-                    handleInputChange("direccion", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              {/* Días de atención */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Días de Atención *
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {diasSemana.map((dia) => (
-                    <label key={dia.value} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.diasAtencion.includes(dia.value)}
-                        onChange={(e) =>
-                          handleDiasAtencionChange(dia.value, e.target.checked)
-                        }
-                        className="mr-2"
-                      />
-                      <span className="text-sm">{dia.label}</span>
+              {/* Información Básica */}
+              <div className="bg-primary/5 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4 flex items-center">
+                  <Store className="h-5 w-5 mr-2 text-primary" />
+                  Información Básica
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Nombre de la Tienda
                     </label>
-                  ))}
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) =>
+                        handleInputChange("name", e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="Nombre de la tienda"
+                      required
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Slug
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.slug}
+                      onChange={(e) =>
+                        handleInputChange("slug", e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="slug-tienda"
+                      required
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Categoría
+                    </label>
+                    <select
+                      value={formData.categoryId}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "categoryId",
+                          parseInt(e.target.value)
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      required
+                      disabled={saving || loadingCategories}
+                    >
+                      <option value="">Seleccionar categoría</option>
+                      {categories.map((category) => (
+                        <option
+                          key={category.categoryId}
+                          value={category.categoryId}
+                        >
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Estado
+                    </label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "status",
+                          e.target.value as StoreStatus
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      required
+                      disabled={saving}
+                    >
+                      {statusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              </div>
-
-              {/* Horario de atención */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Horario de Atención
-                </label>
-                <input
-                  type="text"
-                  value={formData.horarioAtencion}
-                  onChange={(e) =>
-                    handleInputChange("horarioAtencion", e.target.value)
-                  }
-                  placeholder="Ej: 8:00 AM - 6:00 PM"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              {/* URLs de imágenes */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    URL del Logo
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                    Descripción
                   </label>
-                  <input
-                    type="url"
-                    value={formData.logoUrl}
+                  <textarea
+                    value={formData.description}
                     onChange={(e) =>
-                      handleInputChange("logoUrl", e.target.value)
+                      handleInputChange("description", e.target.value)
                     }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring resize-none"
+                    placeholder="Descripción de la tienda"
+                    disabled={saving}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    URL del Banner
+              </div>
+
+              {/* Información del Propietario */}
+              <div className="bg-accent/50 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4 flex items-center">
+                  <User className="h-5 w-5 mr-2 text-primary" />
+                  Información del Propietario
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Nombre del Propietario
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.ownerName}
+                      onChange={(e) =>
+                        handleInputChange("ownerName", e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="Nombre completo"
+                      required
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="correo@ejemplo.com"
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Teléfono
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        handleInputChange("phone", e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="+1234567890"
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      WhatsApp
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.whatsapp}
+                      onChange={(e) =>
+                        handleInputChange("whatsapp", e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="+1234567890"
+                      disabled={saving}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Ubicación */}
+              <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4 flex items-center">
+                  <MapPin className="h-5 w-5 mr-2 text-primary" />
+                  Ubicación
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Latitud
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={formData.latitude}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "latitude",
+                          parseFloat(e.target.value)
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="-34.123456"
+                      required
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Longitud
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={formData.longitude}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "longitude",
+                          parseFloat(e.target.value)
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="-58.123456"
+                      required
+                      disabled={saving}
+                    />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                    Dirección
                   </label>
                   <input
-                    type="url"
-                    value={formData.bannerUrl}
+                    type="text"
+                    value={formData.address}
                     onChange={(e) =>
-                      handleInputChange("bannerUrl", e.target.value)
+                      handleInputChange("address", e.target.value)
                     }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                    placeholder="Dirección completa"
+                    disabled={saving}
                   />
                 </div>
               </div>
 
-              {/* Descripción */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Descripción
-                </label>
-                <textarea
-                  value={formData.descripcion}
-                  onChange={(e) =>
-                    handleInputChange("descripcion", e.target.value)
-                  }
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+              {/* Horarios */}
+              <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4 flex items-center">
+                  <Clock className="h-5 w-5 mr-2 text-primary" />
+                  Horarios de Atención
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-3">
+                      Días de Atención
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {diasSemana.map((dia) => (
+                        <label
+                          key={dia.value}
+                          className="flex items-center space-x-2 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.daysAttention.includes(dia.value)}
+                            onChange={() => handleDayToggle(dia.value)}
+                            className="rounded border-input text-primary focus:ring-ring"
+                            disabled={saving}
+                          />
+                          <span className="text-sm text-foreground">
+                            {dia.label}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Horario de Atención
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.openingHours}
+                      onChange={(e) =>
+                        handleInputChange("openingHours", e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="08:00 - 18:00"
+                      disabled={saving}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Imágenes */}
+              <div className="bg-purple-50 dark:bg-purple-950/20 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4 flex items-center">
+                  <Globe className="h-5 w-5 mr-2 text-primary" />
+                  Imágenes y Multimedia
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      URL del Logo
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.logoUrl}
+                      onChange={(e) =>
+                        handleInputChange("logoUrl", e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="https://ejemplo.com/logo.jpg"
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      URL del Banner
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.bannerUrl}
+                      onChange={(e) =>
+                        handleInputChange("bannerUrl", e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      placeholder="https://ejemplo.com/banner.jpg"
+                      disabled={saving}
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Botones */}
-              <div className="flex justify-end space-x-3 pt-4 border-t">
+              <div className="flex justify-end space-x-3 pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  className="px-4 py-2 border border-input rounded-md bg-background text-foreground text-sm font-medium hover:bg-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition-colors"
+                  disabled={saving}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
+                  className="px-4 py-2 bg-primary border border-transparent rounded-md text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-colors"
                   disabled={saving}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
                   {saving ? (
                     <>
-                      <Loader2 className="animate-spin mr-2" size={16} />
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Guardando...
                     </>
                   ) : (
                     <>
-                      <Save className="mr-2" size={16} />
+                      <Save className="h-4 w-4 mr-2" />
                       Guardar Cambios
                     </>
                   )}

@@ -185,38 +185,39 @@ export function EditProductModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[95vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in-0 duration-300">
+      <div className="bg-background border border-border rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-lg animate-in slide-in-from-bottom-4 duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-            <Package className="h-5 w-5 mr-2 text-blue-500" />
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <h2 className="text-xl font-semibold text-foreground flex items-center">
+            <Package className="mr-2 text-primary" size={24} />
             Editar Producto
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-accent"
+            aria-label="Cerrar modal"
           >
-            <X className="h-6 w-6" />
+            <X size={24} />
           </button>
         </div>
 
         {/* Content */}
         <div className="p-6">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Información básica */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-accent/50 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4">
                   Información Básica
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Nombre *
                     </label>
                     <input
@@ -224,11 +225,11 @@ export function EditProductModal({
                       required
                       value={formData.name}
                       onChange={(e) => handleNameChange(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Slug *
                     </label>
                     <input
@@ -241,11 +242,11 @@ export function EditProductModal({
                           slug: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Descripción corta
                     </label>
                     <textarea
@@ -257,11 +258,11 @@ export function EditProductModal({
                         }))
                       }
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Descripción *
                     </label>
                     <textarea
@@ -274,20 +275,20 @@ export function EditProductModal({
                         }))
                       }
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Códigos y SKU */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-primary/5 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4">
                   Códigos e Identificación
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       SKU
                     </label>
                     <input
@@ -299,11 +300,11 @@ export function EditProductModal({
                           sku: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Código de barras
                     </label>
                     <input
@@ -315,20 +316,20 @@ export function EditProductModal({
                           barcode: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Precios e inventario */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4">
                   Precios e Inventario
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Precio *
                     </label>
                     <input
@@ -343,11 +344,11 @@ export function EditProductModal({
                           price: Number(e.target.value),
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Precio con descuento
                     </label>
                     <input
@@ -361,11 +362,11 @@ export function EditProductModal({
                           discountedPrice: Number(e.target.value),
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Precio de costo
                     </label>
                     <input
@@ -379,11 +380,11 @@ export function EditProductModal({
                           costPrice: Number(e.target.value),
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Stock *
                     </label>
                     <input
@@ -397,11 +398,11 @@ export function EditProductModal({
                           stock: Number(e.target.value),
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Alerta stock bajo
                     </label>
                     <input
@@ -414,20 +415,20 @@ export function EditProductModal({
                           lowStockAlert: Number(e.target.value),
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Categorización */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-amber-50 dark:bg-amber-950/20 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4">
                   Categorización
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Categoría *
                     </label>
                     <select
@@ -439,7 +440,7 @@ export function EditProductModal({
                           categoryId: Number(e.target.value),
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     >
                       <option value="">Seleccionar categoría</option>
                       {categories.map((category) => (
@@ -456,7 +457,7 @@ export function EditProductModal({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Marca
                     </label>
                     <select
@@ -469,7 +470,7 @@ export function EditProductModal({
                             : undefined,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     >
                       <option value="">Sin marca</option>
                       {marcas.map((marca) => (
@@ -483,13 +484,13 @@ export function EditProductModal({
               </div>
 
               {/* Estado y configuración */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-violet-50 dark:bg-violet-950/20 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4">
                   Estado y Configuración
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Estado
                     </label>
                     <select
@@ -500,7 +501,7 @@ export function EditProductModal({
                           status: e.target.value as ProductStatus,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     >
                       <option value="DRAFT">Borrador</option>
                       <option value="PUBLISHED">Publicado</option>
@@ -520,11 +521,11 @@ export function EditProductModal({
                             isAvailable: e.target.checked,
                           }))
                         }
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary focus:ring-ring border-input rounded"
                       />
                       <label
                         htmlFor="isAvailable"
-                        className="ml-2 text-sm text-gray-700"
+                        className="ml-2 text-sm text-foreground"
                       >
                         Disponible para venta
                       </label>
@@ -540,11 +541,11 @@ export function EditProductModal({
                             isFeatured: e.target.checked,
                           }))
                         }
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary focus:ring-ring border-input rounded"
                       />
                       <label
                         htmlFor="isFeatured"
-                        className="ml-2 text-sm text-gray-700"
+                        className="ml-2 text-sm text-foreground"
                       >
                         Producto destacado
                       </label>
@@ -560,11 +561,11 @@ export function EditProductModal({
                             acceptOffers: e.target.checked,
                           }))
                         }
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary focus:ring-ring border-input rounded"
                       />
                       <label
                         htmlFor="acceptOffers"
-                        className="ml-2 text-sm text-gray-700"
+                        className="ml-2 text-sm text-foreground"
                       >
                         Acepta ofertas
                       </label>
@@ -574,13 +575,13 @@ export function EditProductModal({
               </div>
 
               {/* Dimensiones y peso */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-indigo-50 dark:bg-indigo-950/20 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4">
                   Dimensiones y Peso
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Peso (kg)
                     </label>
                     <input
@@ -594,11 +595,11 @@ export function EditProductModal({
                           weight: Number(e.target.value),
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Ancho (cm)
                     </label>
                     <input
@@ -616,11 +617,11 @@ export function EditProductModal({
                           },
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Alto (cm)
                     </label>
                     <input
@@ -638,11 +639,11 @@ export function EditProductModal({
                           },
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Profundidad (cm)
                     </label>
                     <input
@@ -660,20 +661,20 @@ export function EditProductModal({
                           },
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                 </div>
               </div>
 
               {/* SEO */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-accent/30 rounded-lg p-6 border border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4">
                   SEO (Opcional)
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Meta título
                     </label>
                     <input
@@ -685,11 +686,11 @@ export function EditProductModal({
                           metaTitle: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                       Meta descripción
                     </label>
                     <textarea
@@ -701,29 +702,29 @@ export function EditProductModal({
                         }))
                       }
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Botones */}
-              <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+              <div className="flex justify-end space-x-3 pt-6 border-t border-border">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="px-4 py-2 text-sm font-medium text-muted-foreground bg-background border border-input rounded-md hover:bg-accent hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {saving ? (
                     <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
                       Guardando...
                     </div>
                   ) : (

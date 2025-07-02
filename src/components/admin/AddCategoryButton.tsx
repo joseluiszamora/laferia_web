@@ -16,7 +16,7 @@ export function AddCategoryButton() {
     icon: "",
     color: "#3B82F6",
     imageUrl: "",
-    parentCategoryId: "",
+    parentCategoryId: undefined,
   });
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export function AddCategoryButton() {
         icon: "",
         color: "#3B82F6",
         imageUrl: "",
-        parentCategoryId: "",
+        parentCategoryId: undefined,
       });
       // Recargar la página para mostrar la nueva categoría
       window.location.reload();
@@ -178,11 +178,13 @@ export function AddCategoryButton() {
                 </label>
                 <select
                   id="parentCategory"
-                  value={formData.parentCategoryId}
+                  value={formData.parentCategoryId || ""}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      parentCategoryId: e.target.value,
+                      parentCategoryId: e.target.value
+                        ? parseInt(e.target.value)
+                        : undefined,
                     }))
                   }
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"

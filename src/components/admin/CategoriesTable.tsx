@@ -130,14 +130,14 @@ export function CategoriesTable() {
     setShowEditModal(false);
   };
 
-  const handleDelete = async (id: string, name: string) => {
+  const handleDelete = async (id: number, name: string) => {
     if (
       !confirm(`¿Estás seguro de que quieres eliminar la categoría "${name}"?`)
     ) {
       return;
     }
 
-    setDeleting(id);
+    setDeleting(id.toString());
     const result = await deleteCategory(id);
 
     if (result.success) {
@@ -281,7 +281,7 @@ export function CategoriesTable() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center text-sm text-gray-900">
                     <Package className="h-4 w-4 mr-2 text-gray-400" />
-                    {category._count?.productos || 0}
+                    {category._count?.products || 0}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -320,14 +320,16 @@ export function CategoriesTable() {
                     <button
                       className="text-red-600 hover:text-red-900 transition-colors"
                       title="Eliminar"
-                      disabled={deleting === category.categoryId}
+                      disabled={deleting === category.categoryId.toString()}
                       onClick={() =>
                         handleDelete(category.categoryId, category.name)
                       }
                     >
                       <Trash2
                         className={`h-4 w-4 ${
-                          deleting === category.categoryId ? "animate-spin" : ""
+                          deleting === category.categoryId.toString()
+                            ? "animate-spin"
+                            : ""
                         }`}
                       />
                     </button>

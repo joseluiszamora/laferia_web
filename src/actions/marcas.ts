@@ -300,3 +300,32 @@ export async function getAllMarcasActive() {
     return { success: false, error: "Error al obtener las marcas activas" };
   }
 }
+
+export async function getAllMarcasForSelect() {
+  try {
+    const marcas = await prisma.brand.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: {
+        brandId: true,
+        name: true,
+        slug: true,
+      },
+    });
+
+    // Transformar para coincidir con el tipo esperado
+    const transformedMarcas = marcas.map((marca) => ({
+      marcaId: marca.brandId.toString(),
+      name: marca.name,
+      slug: marca.slug,
+    }));
+
+    return { success: true, data: transformedMarcas };
+  } catch (error) {
+    console.error("Error fetching marcas for select:", error);
+    return {
+      success: false,
+      error: "Error al obtener las marcas para selección",
+    };
+  }
+}
