@@ -135,20 +135,20 @@ export function EditCategoryModal({
         <div className="flex items-center justify-between p-6 border-b border-border bg-accent/20">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <FolderTree className="h-5 w-5 text-primary" />
+              <FolderTree className="h-5 w-5 text-primary text-gray-500" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-foreground">
+              <h2 className="text-xl font-semibold text-gray-500">
                 Editar Categoría
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground text-gray-500">
                 Modifica los datos de la categoría
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+            className="p-2 hover:bg-accent rounded-lg transition-colors text-muted-foreground hover:text-gray-500"
             disabled={loading}
           >
             <X className="h-5 w-5" />
@@ -167,8 +167,8 @@ export function EditCategoryModal({
 
             {/* Información Básica */}
             <div className="bg-primary/5 rounded-lg p-6 border border-border">
-              <h3 className="text-lg font-medium text-foreground mb-4 flex items-center">
-                <Hash className="h-5 w-5 mr-2 text-primary" />
+              <h3 className="text-lg font-medium text-gray-500 mb-4 flex items-center">
+                <Hash className="h-5 w-5 mr-2 text-primary text-gray-500" />
                 Información Básica
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -220,8 +220,8 @@ export function EditCategoryModal({
 
             {/* Configuración Visual */}
             <div className="bg-accent/50 rounded-lg p-6 border border-border">
-              <h3 className="text-lg font-medium text-foreground mb-4 flex items-center">
-                <Palette className="h-5 w-5 mr-2 text-primary" />
+              <h3 className="text-lg font-medium text-gray-500 mb-4 flex items-center">
+                <Palette className="h-5 w-5 mr-2 text-primary text-gray-500" />
                 Configuración Visual
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -258,7 +258,7 @@ export function EditCategoryModal({
                       onChange={(e) =>
                         handleInputChange("color", e.target.value)
                       }
-                      className="flex-1 px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                      className="flex-1 px-3 py-2 border border-input bg-background text-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                       placeholder="#3B82F6"
                       disabled={loading}
                     />
@@ -269,8 +269,8 @@ export function EditCategoryModal({
 
             {/* Configuración Avanzada */}
             <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-lg p-6 border border-border">
-              <h3 className="text-lg font-medium text-foreground mb-4 flex items-center">
-                <ImageIcon className="h-5 w-5 mr-2 text-primary" />
+              <h3 className="text-lg font-medium text-gray-500 mb-4 flex items-center">
+                <ImageIcon className="h-5 w-5 mr-2 text-primary text-gray-500" />
                 Configuración Avanzada
               </h3>
               <div className="space-y-4">
