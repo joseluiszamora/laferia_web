@@ -137,8 +137,8 @@ export function EditCategoryModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in-0 duration-300">
-      <div className="bg-background border border-border rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-xl animate-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in-0 duration-300">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-xl animate-in slide-in-from-bottom-4 duration-300">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-accent/20">
           <div className="flex items-center space-x-3">
@@ -181,28 +181,28 @@ export function EditCategoryModal({
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Nombre
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleNameChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     placeholder="Nombre de la categoría"
                     required
                     disabled={loading}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Slug
                   </label>
                   <input
                     type="text"
                     value={formData.slug}
                     onChange={(e) => handleInputChange("slug", e.target.value)}
-                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     placeholder="slug-categoria"
                     required
                     disabled={loading}
@@ -210,7 +210,7 @@ export function EditCategoryModal({
                 </div>
               </div>
               <div className="mt-4">
-                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Descripción
                 </label>
                 <textarea
@@ -219,7 +219,7 @@ export function EditCategoryModal({
                     handleInputChange("description", e.target.value)
                   }
                   rows={3}
-                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring resize-none"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 resize-none"
                   placeholder="Descripción de la categoría (opcional)"
                   disabled={loading}
                 />
@@ -234,20 +234,20 @@ export function EditCategoryModal({
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Icono
                   </label>
                   <input
                     type="text"
                     value={formData.icon || ""}
                     onChange={(e) => handleInputChange("icon", e.target.value)}
-                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     placeholder="Nombre del icono (ej: ShoppingBag)"
                     disabled={loading}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Color
                   </label>
                   <div className="flex space-x-2">
@@ -257,7 +257,7 @@ export function EditCategoryModal({
                       onChange={(e) =>
                         handleInputChange("color", e.target.value)
                       }
-                      className="w-12 h-10 border border-input rounded-md cursor-pointer disabled:cursor-not-allowed"
+                      className="flex-5 h-10 cursor-pointer disabled:cursor-not-allowed"
                       disabled={loading}
                     />
                     <input
@@ -283,7 +283,7 @@ export function EditCategoryModal({
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Categoría Padre
                   </label>
                   <select
@@ -294,7 +294,7 @@ export function EditCategoryModal({
                         e.target.value ? parseInt(e.target.value) : undefined
                       )
                     }
-                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     disabled={loading || loadingCategories}
                   >
                     <option value="">Sin categoría padre</option>
@@ -311,7 +311,7 @@ export function EditCategoryModal({
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     URL de Imagen
                   </label>
                   <input
@@ -320,7 +320,7 @@ export function EditCategoryModal({
                     onChange={(e) =>
                       handleInputChange("imageUrl", e.target.value)
                     }
-                    className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     placeholder="https://ejemplo.com/imagen.jpg"
                     disabled={loading}
                   />
@@ -329,18 +329,18 @@ export function EditCategoryModal({
             </div>
 
             {/* Botones */}
-            <div className="flex justify-end space-x-3 pt-4 border-t border-border">
+            <div className="flex justify-end space-x-5 pt-4 border-t border-border">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-input rounded-md bg-background text-foreground text-sm font-medium hover:bg-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition-colors"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
                 disabled={loading}
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-primary border border-transparent rounded-md text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-colors"
+                className="px-2 py-2 bg-blue-600 text-white dark:bg-blue-500 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50"
                 disabled={loading}
               >
                 {loading ? (
@@ -350,7 +350,7 @@ export function EditCategoryModal({
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4 mr-2" />
+                    {/* <Save className="h-4 w-6 mr-2" /> */}
                     Actualizar Categoría
                   </>
                 )}
