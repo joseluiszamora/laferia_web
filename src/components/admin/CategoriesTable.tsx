@@ -154,13 +154,13 @@ export function CategoriesTable() {
     setDeleting(null);
   };
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("es-ES", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date(date));
-  };
+  // const formatDate = (date: Date) => {
+  //   return new Intl.DateTimeFormat("es-ES", {
+  //     year: "numeric",
+  //     month: "2-digit",
+  //     day: "2-digit",
+  //   }).format(new Date(date));
+  // };
 
   const showingFrom = (pagination.page - 1) * pagination.limit + 1;
   const showingTo = Math.min(
@@ -232,9 +232,9 @@ export function CategoriesTable() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Estado
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Fecha Creación
-              </th>
+              </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
@@ -301,9 +301,9 @@ export function CategoriesTable() {
                     {category.isActive ? "Activa" : "Inactiva"}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                {/* <td className="px-6 py-4 whitespace-nowrap text-sm">
                   {formatDate(category.createdAt)}
-                </td>
+                </td> */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex space-x-2">
                     <button
