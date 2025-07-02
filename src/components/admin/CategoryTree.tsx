@@ -115,7 +115,7 @@ export function CategoryTree() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="rounded-lg shadow p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-4 bg-gray-200 rounded w-1/3"></div>
           <div className="space-y-2">
@@ -129,9 +129,9 @@ export function CategoryTree() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="rounded-lg shadow">
       <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+        <h3 className="text-lg font-semibold  flex items-center">
           <FolderTree className="h-5 w-5 mr-2" />
           Árbol de Categorías
         </h3>
@@ -143,9 +143,7 @@ export function CategoryTree() {
         ) : (
           <div className="text-center py-8">
             <FolderTree className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              No hay categorías
-            </h3>
+            <h3 className="mt-2 text-sm font-medium ">No hay categorías</h3>
             <p className="mt-1 text-sm text-gray-500">
               Comienza creando tu primera categoría.
             </p>
