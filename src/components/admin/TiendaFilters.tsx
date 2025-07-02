@@ -1,6 +1,6 @@
 import { Search, Filter, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { TiendaStatus } from "@prisma/client";
+import { StoreStatus } from "@prisma/client";
 import { getCategories } from "@/actions/categories";
 import { CategoryWithSubcategories } from "@/types/category";
 
@@ -9,8 +9,8 @@ interface TiendaFiltersProps {
   onSearchChange: (value: string) => void;
   selectedCategory: string;
   onCategoryChange: (value: string) => void;
-  selectedStatus: TiendaStatus | "";
-  onStatusChange: (value: TiendaStatus | "") => void;
+  selectedStatus: StoreStatus | "";
+  onStatusChange: (value: StoreStatus | "") => void;
   sortBy: string;
   onSortByChange: (value: string) => void;
   sortOrder: "asc" | "desc";
@@ -174,7 +174,7 @@ export function TiendaFilters({
                 id="status-filter"
                 value={selectedStatus}
                 onChange={(e) =>
-                  onStatusChange(e.target.value as TiendaStatus | "")
+                  onStatusChange(e.target.value as StoreStatus | "")
                 }
                 className="w-full border border-gray-300 rounded-md text-sm py-2 px-3 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
