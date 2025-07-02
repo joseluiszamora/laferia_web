@@ -13,8 +13,8 @@ export default function TiendasPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Tiendas</h1>
-          <p className="mt-2 text-sm text-gray-700">
+          <h1 className="text-2xl font-semibold">Tiendas</h1>
+          <p className="mt-2 text-sm">
             Gestiona las tiendas registradas en la plataforma
           </p>
         </div>

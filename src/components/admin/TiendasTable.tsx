@@ -293,7 +293,7 @@ export function TiendasTable() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="rounded-lg shadow overflow-hidden">
       <TiendaFilters
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
@@ -312,7 +312,7 @@ export function TiendasTable() {
 
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Tienda
@@ -343,7 +343,7 @@ export function TiendasTable() {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200">
             {tiendas.map((tienda) => (
               <tr key={tienda.storeId} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -358,9 +358,7 @@ export function TiendasTable() {
                       />
                     )}
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {tienda.name}
-                      </div>
+                      <div className="text-sm font-medium ">{tienda.name}</div>
                       <div className="text-sm text-gray-500">
                         /{tienda.slug}
                       </div>
@@ -376,9 +374,7 @@ export function TiendasTable() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {tienda.ownerName}
-                  </div>
+                  <div className="text-sm">{tienda.ownerName}</div>
                   {tienda.email && (
                     <div className="flex items-center text-xs text-gray-500 mt-1">
                       <Mail className="h-3 w-3 mr-1" />
@@ -393,15 +389,13 @@ export function TiendasTable() {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {tienda.category.name}
-                  </div>
+                  <div className="text-sm">{tienda.category.name}</div>
                   <div className="text-xs text-gray-500">
                     ID: {tienda.categoryId}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm">
                     {tienda.openingHours || "No especificado"}
                   </div>
                   <div className="text-xs text-gray-500">
@@ -417,7 +411,7 @@ export function TiendasTable() {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center text-sm text-gray-900">
+                  <div className="flex items-center text-sm">
                     <Star className="h-4 w-4 text-yellow-400 mr-1" />
                     {Number(tienda.averageRating || 0).toFixed(1)}
                   </div>
@@ -441,7 +435,7 @@ export function TiendasTable() {
                   </select>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center text-sm text-gray-900">
+                  <div className="flex items-center text-sm">
                     <Package className="h-4 w-4 mr-1 text-blue-500" />
                     {tienda._count?.products || 0}
                   </div>
@@ -450,7 +444,7 @@ export function TiendasTable() {
                     {tienda._count?.comments || 0} reseñas
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-1 text-gray-400" />
                     {formatDate(tienda.createdAt)}
@@ -508,7 +502,7 @@ export function TiendasTable() {
         {tiendas.length === 0 && !loading && (
           <div className="text-center py-12">
             <MapPin className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
+            <h3 className="mt-2 text-sm font-medium">
               No se encontraron tiendas
             </h3>
             <p className="mt-1 text-sm text-gray-500">

@@ -1,15 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  X,
-  FolderTree,
-  Save,
-  Loader2,
-  Palette,
-  ImageIcon,
-  Hash,
-} from "lucide-react";
+import { X, FolderTree, Loader2, Palette, ImageIcon, Hash } from "lucide-react";
 import { CategoryWithSubcategories, CategoryFormData } from "@/types/category";
 import { updateCategory, getCategories } from "@/actions/categories";
 

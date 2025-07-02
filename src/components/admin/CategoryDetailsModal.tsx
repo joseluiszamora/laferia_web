@@ -43,12 +43,12 @@ export function CategoryDetailsModal({
       <div className="flex min-h-full items-center justify-center p-4">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity animate-in fade-in-0 duration-300"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity animate-in fade-in-0 duration-300"
           onClick={onClose}
         />
 
         {/* Modal */}
-        <div className="relative w-full max-w-2xl transform overflow-hidden rounded-2xl bg-background border border-border p-6 text-left shadow-xl transition-all animate-in slide-in-from-bottom-4 duration-300">
+        <div className="relative w-full max-w-2xl transform overflow-hidden rounded-2xl border border-border p-6 text-left shadow-xl transition-all animate-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-medium leading-6 text-foreground flex items-center">
               <FolderTree className="h-5 w-5 mr-2 text-primary" />
