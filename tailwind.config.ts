@@ -9,6 +9,10 @@ const config: Config = {
   darkMode: "class", // Habilitar dark mode basado en clase
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-inter)", "Arial", "sans-serif"],
+        mono: ["var(--font-jetbrains-mono)", "monospace"],
+      },
       colors: {
         // Colores personalizados para el tema
         background: "hsl(var(--background))",

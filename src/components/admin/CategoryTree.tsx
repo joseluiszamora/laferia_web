@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FolderTree, Package, ChevronRight, ChevronDown } from "lucide-react";
-import { getCategoryTree } from "@/actions/categories";
+import { getCategoriesTree } from "@/actions/categories";
 
 interface CategoryNode {
   categoryId: string;
@@ -31,7 +31,7 @@ export function CategoryTree() {
 
   const loadCategoryTree = async () => {
     setLoading(true);
-    const result = await getCategoryTree();
+    const result = await getCategoriesTree();
     if (result.success) {
       setCategories((result.data as unknown as CategoryNode[]) || []);
     }

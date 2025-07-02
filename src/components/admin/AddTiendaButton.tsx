@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Plus, Save, Loader2 } from "lucide-react";
 import { TiendaFormData } from "@/types/tienda";
-import { TiendaStatus } from "@prisma/client";
+import { StoreStatus } from "@prisma/client";
 import { createTienda } from "@/actions/tiendas";
-import { getCategories } from "@/actions/categories";
-import { CategoryWithSubcategories } from "@/types/category";
+import { getCategoriesForSelect } from "@/actions/categories";
+import { CategoryForSelect } from "@/types/category";
 import { useEffect } from "react";
 
 interface AddTiendaButtonProps {
@@ -19,29 +19,29 @@ export function AddTiendaButton({
   className = "",
 }: AddTiendaButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
+  const [categories, setCategories] = useState<CategoryForSelect[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<TiendaFormData>({
-    nombre: "",
+    name: "",
     slug: "",
-    nombrePropietario: "",
+    ownerName: "",
     email: "",
-    telefono: "",
+    phone: "",
     whatsapp: "",
-    latitud: 0,
-    longitud: 0,
-    categoriaId: "",
-    contacto: {},
-    direccion: "",
-    diasAtencion: [],
-    horarioAtencion: "",
-    status: "PENDIENTE",
+    latitude: 0,
+    longitude: 0,
+    categoryId: 0,
+    contact: {},
+    address: "",
+    daysAttention: [],
+    openingHours: "",
+    status: "PENDING",
     logoUrl: "",
     bannerUrl: "",
-    descripcion: "",
+    description: "",
   });
 
   const diasSemana = [
@@ -63,7 +63,7 @@ export function AddTiendaButton({
   const loadCategories = async () => {
     setLoadingCategories(true);
     try {
-      const result = await getCategories();
+      const result = await getCategoriesForSelect();
       if (result.success && result.data) {
         setCategories(result.data);
       }
@@ -74,8 +74,8 @@ export function AddTiendaButton({
     }
   };
 
-  const generateSlug = (nombre: string) => {
-    return nombre
+  const generateSlug = (name: string) => {
+    return name
       .toLowerCase()
       .replace(/[áàäâ]/g, "a")
       .replace(/[éèëê]/g, "e")
@@ -91,23 +91,23 @@ export function AddTiendaButton({
 
   const resetForm = () => {
     setFormData({
-      nombre: "",
+      name: "",
       slug: "",
-      nombrePropietario: "",
+      ownerName: "",
       email: "",
-      telefono: "",
+      phone: "",
       whatsapp: "",
-      latitud: 0,
-      longitud: 0,
-      categoriaId: "",
-      contacto: {},
-      direccion: "",
-      diasAtencion: [],
-      horarioAtencion: "",
-      status: "PENDIENTE",
+      latitude: 0,
+      longitude: 0,
+      categoryId: 0,
+      contact: {},
+      address: "",
+      daysAttention: [],
+      openingHours: "",
+      status: "PENDING",
       logoUrl: "",
       bannerUrl: "",
-      descripcion: "",
+      description: "",
     });
     setError(null);
   };
@@ -132,7 +132,7 @@ export function AddTiendaButton({
     }));
 
     // Auto-generar slug cuando cambia el nombre
-    if (field === "nombre" && typeof value === "string") {
+    if (field === "name" && typeof value === "string") {
       const newSlug = generateSlug(value);
       setFormData((prev) => ({
         ...prev,
@@ -144,9 +144,9 @@ export function AddTiendaButton({
   const handleDiasAtencionChange = (dia: string, checked: boolean) => {
     setFormData((prev) => ({
       ...prev,
-      diasAtencion: checked
-        ? [...prev.diasAtencion, dia]
-        : prev.diasAtencion.filter((d) => d !== dia),
+      daysAttention: checked
+        ? [...prev.daysAttention, dia]
+        : prev.daysAttention.filter((d: string) => d !== dia),
     }));
   };
 
@@ -215,9 +215,9 @@ export function AddTiendaButton({
                     </label>
                     <input
                       type="text"
-                      value={formData.nombre}
+                      value={formData.name}
                       onChange={(e) =>
-                        handleInputChange("nombre", e.target.value)
+                        handleInputChange("name", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
@@ -246,9 +246,9 @@ export function AddTiendaButton({
                     </label>
                     <input
                       type="text"
-                      value={formData.nombrePropietario}
+                      value={formData.ownerName}
                       onChange={(e) =>
-                        handleInputChange("nombrePropietario", e.target.value)
+                        handleInputChange("ownerName", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
@@ -263,15 +263,15 @@ export function AddTiendaButton({
                       onChange={(e) =>
                         handleInputChange(
                           "status",
-                          e.target.value as TiendaStatus
+                          e.target.value as StoreStatus
                         )
                       }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="PENDIENTE">Pendiente</option>
-                      <option value="ACTIVA">Activa</option>
-                      <option value="INACTIVA">Inactiva</option>
-                      <option value="SUSPENDIDA">Suspendida</option>
+                      <option value="PENDING">Pendiente</option>
+                      <option value="ACTIVE">Activa</option>
+                      <option value="INACTIVE">Inactiva</option>
+                      <option value="SUSPEND">Suspendida</option>
                     </select>
                   </div>
                 </div>
@@ -297,9 +297,9 @@ export function AddTiendaButton({
                     </label>
                     <input
                       type="tel"
-                      value={formData.telefono}
+                      value={formData.phone}
                       onChange={(e) =>
-                        handleInputChange("telefono", e.target.value)
+                        handleInputChange("phone", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -326,9 +326,9 @@ export function AddTiendaButton({
                       Categoría *
                     </label>
                     <select
-                      value={formData.categoriaId}
+                      value={formData.categoryId}
                       onChange={(e) =>
-                        handleInputChange("categoriaId", e.target.value)
+                        handleInputChange("categoryId", Number(e.target.value))
                       }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
@@ -356,10 +356,10 @@ export function AddTiendaButton({
                     <input
                       type="number"
                       step="any"
-                      value={formData.latitud}
+                      value={formData.latitude}
                       onChange={(e) =>
                         handleInputChange(
-                          "latitud",
+                          "latitude",
                           parseFloat(e.target.value) || 0
                         )
                       }
@@ -374,10 +374,10 @@ export function AddTiendaButton({
                     <input
                       type="number"
                       step="any"
-                      value={formData.longitud}
+                      value={formData.longitude}
                       onChange={(e) =>
                         handleInputChange(
-                          "longitud",
+                          "longitude",
                           parseFloat(e.target.value) || 0
                         )
                       }
@@ -394,9 +394,9 @@ export function AddTiendaButton({
                   </label>
                   <input
                     type="text"
-                    value={formData.direccion}
+                    value={formData.address}
                     onChange={(e) =>
-                      handleInputChange("direccion", e.target.value)
+                      handleInputChange("address", e.target.value)
                     }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -412,7 +412,7 @@ export function AddTiendaButton({
                       <label key={dia.value} className="flex items-center">
                         <input
                           type="checkbox"
-                          checked={formData.diasAtencion.includes(dia.value)}
+                          checked={formData.daysAttention.includes(dia.value)}
                           onChange={(e) =>
                             handleDiasAtencionChange(
                               dia.value,
@@ -425,7 +425,7 @@ export function AddTiendaButton({
                       </label>
                     ))}
                   </div>
-                  {formData.diasAtencion.length === 0 && (
+                  {formData.daysAttention.length === 0 && (
                     <p className="text-sm text-red-600 mt-1">
                       Debe seleccionar al menos un día de atención
                     </p>
@@ -439,9 +439,9 @@ export function AddTiendaButton({
                   </label>
                   <input
                     type="text"
-                    value={formData.horarioAtencion}
+                    value={formData.openingHours}
                     onChange={(e) =>
-                      handleInputChange("horarioAtencion", e.target.value)
+                      handleInputChange("openingHours", e.target.value)
                     }
                     placeholder="Ej: 8:00 AM - 6:00 PM"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -484,9 +484,9 @@ export function AddTiendaButton({
                     Descripción
                   </label>
                   <textarea
-                    value={formData.descripcion}
+                    value={formData.description}
                     onChange={(e) =>
-                      handleInputChange("descripcion", e.target.value)
+                      handleInputChange("description", e.target.value)
                     }
                     rows={4}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -504,7 +504,7 @@ export function AddTiendaButton({
                   </button>
                   <button
                     type="submit"
-                    disabled={saving || formData.diasAtencion.length === 0}
+                    disabled={saving || formData.daysAttention.length === 0}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                   >
                     {saving ? (

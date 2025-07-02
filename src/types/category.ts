@@ -9,6 +9,13 @@ export type CategoryWithSubcategories = Category & {
   };
 };
 
+export type CategoryForSelect = Category & {
+  parentCategory: {
+    categoryId: number;
+    name: string;
+  } | null;
+};
+
 export type CategoryFormData = {
   name: string;
   slug: string;

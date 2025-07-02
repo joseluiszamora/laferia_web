@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react";
 import { Plus, X, Package, Save } from "lucide-react";
 import { createProduct } from "@/actions/products";
-import { getCategories } from "@/actions/categories";
-import { getAllMarcasForSelect } from "@/actions/marcas";
+import { getCategoriesForSelect } from "@/actions/categories";
+import { getAllMarcasActive } from "@/actions/marcas";
 import { ProductFormData } from "@/types/product";
-import { CategoryWithSubcategories } from "@/types/category";
+import { CategoryForSelect } from "@/types/category";
 import { ProductStatus } from "@prisma/client";
 
 interface MarcaOption {
-  marcaId: string;
+  brandId: number;
   name: string;
   slug: string;
 }
@@ -19,7 +19,7 @@ export function AddProductButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
+  const [categories, setCategories] = useState<CategoryForSelect[]>([]);
   const [marcas, setMarcas] = useState<MarcaOption[]>([]);
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
@@ -40,9 +40,9 @@ export function AddProductButton() {
       height: 0,
       depth: 0,
     },
-    categoriaId: "",
-    marcaId: undefined,
-    tiendaId: undefined,
+    categoryId: 0,
+    brandId: undefined,
+    storeId: 0,
     status: "DRAFT",
     isAvailable: true,
     isFeatured: false,
@@ -61,8 +61,8 @@ export function AddProductButton() {
     setLoading(true);
 
     const [categoriesResult, marcasResult] = await Promise.all([
-      getCategories(),
-      getAllMarcasForSelect(),
+      getCategoriesForSelect(),
+      getAllMarcasActive(),
     ]);
 
     if (categoriesResult.success) {
@@ -118,9 +118,9 @@ export function AddProductButton() {
         height: 0,
         depth: 0,
       },
-      categoriaId: "",
-      marcaId: undefined,
-      tiendaId: undefined,
+      categoryId: 0,
+      brandId: undefined,
+      storeId: 0,
       status: "DRAFT",
       isAvailable: true,
       isFeatured: false,
@@ -411,11 +411,11 @@ export function AddProductButton() {
                         </label>
                         <select
                           required
-                          value={formData.categoriaId}
+                          value={formData.categoryId}
                           onChange={(e) =>
                             setFormData((prev) => ({
                               ...prev,
-                              categoriaId: e.target.value,
+                              categoryId: Number(e.target.value),
                             }))
                           }
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -439,18 +439,20 @@ export function AddProductButton() {
                           Marca
                         </label>
                         <select
-                          value={formData.marcaId || ""}
+                          value={formData.brandId || ""}
                           onChange={(e) =>
                             setFormData((prev) => ({
                               ...prev,
-                              marcaId: e.target.value || undefined,
+                              brandId: e.target.value
+                                ? Number(e.target.value)
+                                : undefined,
                             }))
                           }
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">Sin marca</option>
                           {marcas.map((marca) => (
-                            <option key={marca.marcaId} value={marca.marcaId}>
+                            <option key={marca.brandId} value={marca.brandId}>
                               {marca.name}
                             </option>
                           ))}

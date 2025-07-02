@@ -8,7 +8,7 @@ import { ProductWithDetails } from "@/types/product";
 interface ProductDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  productId: string;
+  productId: number;
 }
 
 export function ProductDetailsModal({
@@ -41,13 +41,13 @@ export function ProductDetailsModal({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "PUBLICADO":
+      case "PUBLISHED":
         return "bg-green-100 text-green-800";
-      case "BORRADOR":
+      case "DRAFT":
         return "bg-gray-100 text-gray-800";
-      case "ARCHIVADO":
+      case "ARCHIVED":
         return "bg-purple-100 text-purple-800";
-      case "AGOTADO":
+      case "EXHAUSTED":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -295,14 +295,14 @@ export function ProductDetailsModal({
                       <label className="text-sm font-medium text-gray-500">
                         Categoría
                       </label>
-                      <p className="text-gray-900">{product.categoria.name}</p>
+                      <p className="text-gray-900">{product.category.name}</p>
                     </div>
-                    {product.marca && (
+                    {product.brand && (
                       <div>
                         <label className="text-sm font-medium text-gray-500">
                           Marca
                         </label>
-                        <p className="text-gray-900">{product.marca.name}</p>
+                        <p className="text-gray-900">{product.brand.name}</p>
                       </div>
                     )}
                     {product.tags.length > 0 && (
@@ -345,7 +345,7 @@ export function ProductDetailsModal({
                       <Package className="h-4 w-4 text-gray-400" />
                       <span className="text-sm text-gray-500">Atributos:</span>
                       <span className="font-medium">
-                        {product._count?.atributos || 0}
+                        {product._count?.attributes || 0}
                       </span>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -466,7 +466,7 @@ export function ProductDetailsModal({
                   <div>
                     <span className="font-medium text-gray-500">ID:</span>
                     <span className="ml-2 font-mono text-gray-700">
-                      {product.id}
+                      {product.productId}
                     </span>
                   </div>
                   <div>

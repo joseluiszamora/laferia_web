@@ -40,7 +40,7 @@ export type ProductFormData = {
   };
   categoryId: number;
   brandId?: number;
-  storeId?: number;
+  storeId: number; // Cambiar de opcional a requerido
   status: ProductStatus;
   isAvailable: boolean;
   isFeatured: boolean;

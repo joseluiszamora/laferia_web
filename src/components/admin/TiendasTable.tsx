@@ -18,10 +18,10 @@ import {
 import {
   getTiendas,
   deleteTienda,
-  updateTiendaStatus,
+  toggleTiendaStatus,
 } from "@/actions/tiendas";
 import { TiendaWithDetails, TiendaPaginationInfo } from "@/types/tienda";
-import { TiendaStatus } from "@prisma/client";
+import { StoreStatus } from "@prisma/client";
 import { TiendaFilters } from "./TiendaFilters";
 import { Pagination } from "./Pagination";
 import { TiendaDetailsModal } from "./TiendaDetailsModal";
@@ -44,8 +44,8 @@ export function TiendasTable() {
   // Estados de filtros
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<TiendaStatus | "">("");
-  const [sortBy, setSortBy] = useState("fechaRegistro");
+  const [selectedStatus, setSelectedStatus] = useState<StoreStatus | "">("");
+  const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -59,7 +59,7 @@ export function TiendasTable() {
       page: number = 1,
       search: string = "",
       categoriaId: string = "",
-      status: TiendaStatus | "" = "",
+      status: StoreStatus | "" = "",
       sortByField: string = "fechaRegistro",
       sortOrderField: "asc" | "desc" = "desc",
       limit: number = 10
@@ -69,13 +69,13 @@ export function TiendasTable() {
         page,
         limit,
         search: search.trim(),
-        categoriaId: categoriaId || undefined,
+        categoryId: categoriaId ? parseInt(categoriaId) : undefined,
         status: status || undefined,
         sortBy: sortByField as
-          | "nombre"
-          | "calificacionPromedio"
-          | "totalComentarios"
-          | "fechaRegistro",
+          | "name"
+          | "averageRating"
+          | "totalComments"
+          | "createdAt",
         sortOrder: sortOrderField,
       });
 
@@ -132,7 +132,7 @@ export function TiendasTable() {
     setSelectedCategory(value);
   };
 
-  const handleStatusChange = (value: TiendaStatus | "") => {
+  const handleStatusChange = (value: StoreStatus | "") => {
     setSelectedStatus(value);
   };
 
@@ -152,20 +152,20 @@ export function TiendasTable() {
     setSearchTerm("");
     setSelectedCategory("");
     setSelectedStatus("");
-    setSortBy("fechaRegistro");
+    setSortBy("createdAt");
     setSortOrder("desc");
     setItemsPerPage(10);
   };
 
-  const handleDelete = async (id: string, nombre: string) => {
+  const handleDelete = async (id: number, name: string) => {
     if (
-      !confirm(`¿Estás seguro de que quieres eliminar la tienda "${nombre}"?`)
+      !confirm(`¿Estás seguro de que quieres eliminar la tienda "${name}"?`)
     ) {
       return;
     }
 
-    setDeleting(id);
-    const result = await deleteTienda(id);
+    setDeleting(id.toString());
+    const result = await deleteTienda(id.toString());
 
     if (result.success) {
       await loadTiendas(
@@ -183,9 +183,9 @@ export function TiendasTable() {
     setDeleting(null);
   };
 
-  const handleStatusUpdate = async (id: string, newStatus: TiendaStatus) => {
-    setUpdatingStatus(id);
-    const result = await updateTiendaStatus(id, newStatus);
+  const handleStatusUpdate = async (id: number) => {
+    setUpdatingStatus(id.toString());
+    const result = await toggleTiendaStatus(id.toString());
 
     if (result.success) {
       await loadTiendas(
@@ -203,13 +203,13 @@ export function TiendasTable() {
     setUpdatingStatus(null);
   };
 
-  const handleViewDetails = (tiendaId: string) => {
-    setSelectedTiendaId(tiendaId);
+  const handleViewDetails = (storeId: number) => {
+    setSelectedTiendaId(storeId.toString());
     setDetailsModalOpen(true);
   };
 
-  const handleEdit = (tiendaId: string) => {
-    setSelectedTiendaId(tiendaId);
+  const handleEdit = (storeId: number) => {
+    setSelectedTiendaId(storeId.toString());
     setEditModalOpen(true);
   };
 
@@ -239,15 +239,15 @@ export function TiendasTable() {
     }).format(new Date(date));
   };
 
-  const getStatusColor = (status: TiendaStatus) => {
+  const getStatusColor = (status: StoreStatus) => {
     switch (status) {
-      case "ACTIVA":
+      case "ACTIVE":
         return "bg-green-100 text-green-800";
-      case "PENDIENTE":
+      case "PENDING":
         return "bg-yellow-100 text-yellow-800";
-      case "INACTIVA":
+      case "INACTIVE":
         return "bg-gray-100 text-gray-800";
-      case "SUSPENDIDA":
+      case "SUSPEND":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -345,31 +345,31 @@ export function TiendasTable() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {tiendas.map((tienda) => (
-              <tr key={tienda.tiendaId} className="hover:bg-gray-50">
+              <tr key={tienda.storeId} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     {tienda.logoUrl && (
                       <Image
                         className="h-10 w-10 rounded-full mr-3 object-cover"
                         src={tienda.logoUrl}
-                        alt={tienda.nombre}
+                        alt={tienda.name}
                         width={40}
                         height={40}
                       />
                     )}
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        {tienda.nombre}
+                        {tienda.name}
                       </div>
                       <div className="text-sm text-gray-500">
                         /{tienda.slug}
                       </div>
-                      {tienda.direccion && (
+                      {tienda.address && (
                         <div className="flex items-center text-xs text-gray-400 mt-1">
                           <MapPin className="h-3 w-3 mr-1" />
-                          {tienda.direccion.length > 30
-                            ? `${tienda.direccion.substring(0, 30)}...`
-                            : tienda.direccion}
+                          {tienda.address.length > 30
+                            ? `${tienda.address.substring(0, 30)}...`
+                            : tienda.address}
                         </div>
                       )}
                     </div>
@@ -377,7 +377,7 @@ export function TiendasTable() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {tienda.nombrePropietario}
+                    {tienda.ownerName}
                   </div>
                   {tienda.email && (
                     <div className="flex items-center text-xs text-gray-500 mt-1">
@@ -385,28 +385,28 @@ export function TiendasTable() {
                       {tienda.email}
                     </div>
                   )}
-                  {tienda.telefono && (
+                  {tienda.phone && (
                     <div className="flex items-center text-xs text-gray-500 mt-1">
                       <Phone className="h-3 w-3 mr-1" />
-                      {tienda.telefono}
+                      {tienda.phone}
                     </div>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {tienda.categoria.name}
+                    {tienda.category.name}
                   </div>
                   <div className="text-xs text-gray-500">
-                    ID: {tienda.categoriaId.substring(0, 8)}...
+                    ID: {tienda.categoryId}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {tienda.horarioAtencion || "No especificado"}
+                    {tienda.openingHours || "No especificado"}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {tienda.diasAtencion?.length > 0
-                      ? tienda.diasAtencion.join(", ")
+                    {tienda.daysAttention?.length > 0
+                      ? tienda.daysAttention.join(", ")
                       : "No especificado"}
                   </div>
                   {tienda.whatsapp && (
@@ -419,46 +419,41 @@ export function TiendasTable() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center text-sm text-gray-900">
                     <Star className="h-4 w-4 text-yellow-400 mr-1" />
-                    {Number(tienda.calificacionPromedio || 0).toFixed(1)}
+                    {Number(tienda.averageRating || 0).toFixed(1)}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {tienda.totalComentarios} comentarios
+                    {tienda.totalComments} comentarios
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <select
                     value={tienda.status}
-                    onChange={(e) =>
-                      handleStatusUpdate(
-                        tienda.tiendaId,
-                        e.target.value as TiendaStatus
-                      )
-                    }
-                    disabled={updatingStatus === tienda.tiendaId}
+                    onChange={() => handleStatusUpdate(tienda.storeId)}
+                    disabled={updatingStatus === tienda.storeId.toString()}
                     className={`text-xs font-semibold rounded-full px-2 py-1 border-0 focus:ring-2 focus:ring-blue-500 ${getStatusColor(
                       tienda.status
                     )}`}
                   >
-                    <option value="ACTIVA">Activa</option>
-                    <option value="PENDIENTE">Pendiente</option>
-                    <option value="INACTIVA">Inactiva</option>
-                    <option value="SUSPENDIDA">Suspendida</option>
+                    <option value="ACTIVE">Activa</option>
+                    <option value="PENDING">Pendiente</option>
+                    <option value="INACTIVE">Inactiva</option>
+                    <option value="SUSPEND">Suspendida</option>
                   </select>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center text-sm text-gray-900">
                     <Package className="h-4 w-4 mr-1 text-blue-500" />
-                    {tienda._count?.productos || 0}
+                    {tienda._count?.products || 0}
                   </div>
                   <div className="flex items-center text-xs text-gray-500 mt-1">
                     <MessageCircle className="h-3 w-3 mr-1" />
-                    {tienda._count?.comentarios || 0} reseñas
+                    {tienda._count?.comments || 0} reseñas
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-1 text-gray-400" />
-                    {formatDate(tienda.fechaRegistro)}
+                    {formatDate(tienda.createdAt)}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -466,14 +461,14 @@ export function TiendasTable() {
                     <button
                       className="text-blue-600 hover:text-blue-900 transition-colors"
                       title="Ver detalles"
-                      onClick={() => handleViewDetails(tienda.tiendaId)}
+                      onClick={() => handleViewDetails(tienda.storeId)}
                     >
                       <Eye className="h-4 w-4" />
                     </button>
                     <button
                       className="text-green-600 hover:text-green-900 transition-colors"
                       title="Editar"
-                      onClick={() => handleEdit(tienda.tiendaId)}
+                      onClick={() => handleEdit(tienda.storeId)}
                     >
                       <Edit className="h-4 w-4" />
                     </button>
@@ -482,7 +477,7 @@ export function TiendasTable() {
                       title="Ver en mapa"
                       onClick={() =>
                         window.open(
-                          `https://maps.google.com/?q=${tienda.latitud},${tienda.longitud}`,
+                          `https://maps.google.com/?q=${tienda.latitude},${tienda.longitude}`,
                           "_blank"
                         )
                       }
@@ -492,14 +487,14 @@ export function TiendasTable() {
                     <button
                       className="text-red-600 hover:text-red-900 transition-colors"
                       title="Eliminar"
-                      disabled={deleting === tienda.tiendaId}
-                      onClick={() =>
-                        handleDelete(tienda.tiendaId, tienda.nombre)
-                      }
+                      disabled={deleting === tienda.storeId.toString()}
+                      onClick={() => handleDelete(tienda.storeId, tienda.name)}
                     >
                       <Trash2
                         className={`h-4 w-4 ${
-                          deleting === tienda.tiendaId ? "animate-spin" : ""
+                          deleting === tienda.storeId.toString()
+                            ? "animate-spin"
+                            : ""
                         }`}
                       />
                     </button>

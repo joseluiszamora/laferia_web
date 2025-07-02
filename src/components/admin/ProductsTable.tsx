@@ -23,8 +23,8 @@ import { Pagination } from "./Pagination";
 export function ProductsTable() {
   const [products, setProducts] = useState<ProductWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<number | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<number | null>(null);
   const [pagination, setPagination] = useState<ProductPaginationInfo>({
     page: 1,
     limit: 10,
@@ -44,7 +44,7 @@ export function ProductsTable() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Estados para modales
-  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const [selectedProductId, setSelectedProductId] = useState<number>(0);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -67,8 +67,8 @@ export function ProductsTable() {
         page,
         limit,
         search: search || undefined,
-        categoriaId: categoriaId || undefined,
-        marcaId: marcaId || undefined,
+        categoryId: categoriaId ? parseInt(categoriaId) : undefined,
+        brandId: marcaId ? parseInt(marcaId) : undefined,
         status: status || undefined,
         isAvailable: available !== "" ? available : undefined,
         isFeatured: featured !== "" ? featured : undefined,
@@ -161,7 +161,7 @@ export function ProductsTable() {
   }, []);
 
   // Funciones de acciones
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!confirm("¿Estás seguro de que deseas eliminar este producto?")) {
       return;
     }
@@ -188,7 +188,7 @@ export function ProductsTable() {
     setDeleting(null);
   };
 
-  const handleStatusUpdate = async (id: string, newStatus: ProductStatus) => {
+  const handleStatusUpdate = async (id: number, newStatus: ProductStatus) => {
     setUpdatingStatus(id);
     const result = await updateProductStatus(id, newStatus);
 
@@ -211,7 +211,7 @@ export function ProductsTable() {
     setUpdatingStatus(null);
   };
 
-  const handleToggleAvailability = async (id: string) => {
+  const handleToggleAvailability = async (id: number) => {
     const result = await toggleProductAvailability(id);
     if (result.success) {
       await loadProducts(
@@ -229,7 +229,7 @@ export function ProductsTable() {
     }
   };
 
-  const handleToggleFeatured = async (id: string) => {
+  const handleToggleFeatured = async (id: number) => {
     const result = await toggleProductFeatured(id);
     if (result.success) {
       await loadProducts(
@@ -247,12 +247,12 @@ export function ProductsTable() {
     }
   };
 
-  const handleViewDetails = (productId: string) => {
+  const handleViewDetails = (productId: number) => {
     setSelectedProductId(productId);
     setShowDetailsModal(true);
   };
 
-  const handleEdit = (productId: string) => {
+  const handleEdit = (productId: number) => {
     setSelectedProductId(productId);
     setShowEditModal(true);
   };
@@ -281,13 +281,13 @@ export function ProductsTable() {
 
   const getStatusColor = (status: ProductStatus) => {
     switch (status) {
-      case "PUBLICADO":
+      case "PUBLISHED":
         return "bg-green-100 text-green-800";
-      case "BORRADOR":
+      case "DRAFT":
         return "bg-gray-100 text-gray-800";
-      case "ARCHIVADO":
+      case "ARCHIVED":
         return "bg-purple-100 text-purple-800";
-      case "AGOTADO":
+      case "EXHAUSTED":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -421,7 +421,7 @@ export function ProductsTable() {
                 </tr>
               ) : (
                 products.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
+                  <tr key={product.productId} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -453,11 +453,11 @@ export function ProductsTable() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {product.categoria.name}
+                        {product.category.name}
                       </div>
-                      {product.marca && (
+                      {product.brand && (
                         <div className="text-sm text-gray-500">
-                          {product.marca.name}
+                          {product.brand.name}
                         </div>
                       )}
                     </td>
@@ -486,39 +486,41 @@ export function ProductsTable() {
                         value={product.status}
                         onChange={(e) =>
                           handleStatusUpdate(
-                            product.id,
+                            product.productId,
                             e.target.value as ProductStatus
                           )
                         }
-                        disabled={updatingStatus === product.id}
+                        disabled={updatingStatus === product.productId}
                         className={`text-xs font-semibold rounded-full px-2 py-1 border-0 focus:ring-2 focus:ring-blue-500 ${getStatusColor(
                           product.status
                         )}`}
                       >
-                        <option value="PUBLICADO">Publicado</option>
-                        <option value="BORRADOR">Borrador</option>
-                        <option value="ARCHIVADO">Archivado</option>
-                        <option value="AGOTADO">Agotado</option>
+                        <option value="PUBLISHED">Publicado</option>
+                        <option value="DRAFT">Borrador</option>
+                        <option value="ARCHIVED">Archivado</option>
+                        <option value="EXHAUSTED">Agotado</option>
                       </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button
-                          onClick={() => handleViewDetails(product.id)}
+                          onClick={() => handleViewDetails(product.productId)}
                           className="text-indigo-600 hover:text-indigo-900"
                           title="Ver producto"
                         >
                           <Eye className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => handleEdit(product.id)}
+                          onClick={() => handleEdit(product.productId)}
                           className="text-green-600 hover:text-green-900"
                           title="Editar producto"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => handleToggleAvailability(product.id)}
+                          onClick={() =>
+                            handleToggleAvailability(product.productId)
+                          }
                           className={`${
                             product.isAvailable
                               ? "text-yellow-600 hover:text-yellow-900"
@@ -529,7 +531,9 @@ export function ProductsTable() {
                           {product.isAvailable ? "⏸️" : "▶️"}
                         </button>
                         <button
-                          onClick={() => handleToggleFeatured(product.id)}
+                          onClick={() =>
+                            handleToggleFeatured(product.productId)
+                          }
                           className={`${
                             product.isFeatured
                               ? "text-yellow-500"
@@ -544,8 +548,8 @@ export function ProductsTable() {
                           ⭐
                         </button>
                         <button
-                          onClick={() => handleDelete(product.id)}
-                          disabled={deleting === product.id}
+                          onClick={() => handleDelete(product.productId)}
+                          disabled={deleting === product.productId}
                           className="text-red-600 hover:text-red-900"
                           title="Eliminar producto"
                         >
