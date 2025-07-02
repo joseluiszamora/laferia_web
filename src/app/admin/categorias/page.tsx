@@ -7,10 +7,8 @@ export default function CategoriesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Categorías</h1>
-          <p className="text-gray-600 mt-2">
-            Organiza los productos por categorías
-          </p>
+          <h1 className="text-3xl font-bold">Categorías</h1>
+          <p className="mt-2">Organiza los productos por categorías</p>
         </div>
         <AddCategoryButton />
       </div>

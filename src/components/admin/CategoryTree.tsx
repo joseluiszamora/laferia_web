@@ -79,11 +79,11 @@ export function CategoryTree() {
               />
             )}
 
-            {category.icon && (
+            {/* {category.icon && (
               <span className="mr-2 text-sm">{category.icon}</span>
-            )}
+            )} */}
 
-            <span className="font-medium text-gray-900 dark:text-gray-100">
+            <span className="font-medium text-gray-700 dark:text-gray-500">
               {category.name}
             </span>
 

@@ -170,7 +170,7 @@ export function CategoriesTable() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow">
+      <div className="rounded-lg shadow">
         <CategoryFilters
           searchTerm={searchTerm}
           onSearchChange={handleSearchChange}
@@ -197,7 +197,7 @@ export function CategoriesTable() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="rounded-lg shadow overflow-hidden">
       <CategoryFilters
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
@@ -212,10 +212,13 @@ export function CategoriesTable() {
 
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Categoría
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Icono
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Jerarquía
@@ -237,9 +240,22 @@ export function CategoriesTable() {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200">
             {categories.map((category) => (
-              <tr key={category.categoryId} className="hover:bg-gray-50">
+              <tr key={category.categoryId} className="hover:bg-gray-100">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div>
+                      <div className="text-sm font-medium">{category.name}</div>
+                      <div className="text-sm ">/{category.slug}</div>
+                      {category.description && (
+                        <div className="text-xs text-gray-400 mt-1 max-w-xs truncate">
+                          {category.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     {category.color && (
@@ -249,21 +265,8 @@ export function CategoriesTable() {
                       ></div>
                     )}
                     {category.icon && (
-                      <span className="mr-3 text-lg">{category.icon}</span>
+                      <span className="mr-3 text-xs">{category.icon}</span>
                     )}
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {category.name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        /{category.slug}
-                      </div>
-                      {category.description && (
-                        <div className="text-xs text-gray-400 mt-1 max-w-xs truncate">
-                          {category.description}
-                        </div>
-                      )}
-                    </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -279,12 +282,12 @@ export function CategoriesTable() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center text-sm text-gray-900">
+                  <div className="flex items-center text-sm">
                     <Package className="h-4 w-4 mr-2 text-gray-400" />
                     {category._count?.products || 0}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
                   {category._count?.subcategories || 0}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -298,7 +301,7 @@ export function CategoriesTable() {
                     {category.isActive ? "Activa" : "Inactiva"}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
                   {formatDate(category.createdAt)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
