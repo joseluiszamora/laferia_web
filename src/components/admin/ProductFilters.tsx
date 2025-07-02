@@ -138,7 +138,7 @@ export function ProductFilters({
   ];
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4">
+    <div className="p-4 rounded-lg shadow-sm border border-gray-200 space-y-4">
       {/* Barra superior con búsqueda y botón de filtros */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex-1 max-w-md">
@@ -156,10 +156,10 @@ export function ProductFilters({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+            className={`inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
               hasActiveFilters
                 ? "text-blue-700 bg-blue-50 border-blue-300"
-                : "text-gray-700 bg-white hover:bg-gray-50"
+                : "text-gray-700 hover:bg-gray-50"
             }`}
           >
             <Filter className="h-4 w-4 mr-2" />

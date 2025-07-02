@@ -8,10 +8,8 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Productos</h1>
-          <p className="text-gray-600 mt-2">
-            Gestiona el inventario de productos
-          </p>
+          <h1 className="text-3xl font-bold ">Productos</h1>
+          <p className="mt-2">Gestiona el inventario de productos</p>
         </div>
         <AddProductButton />
       </div>
