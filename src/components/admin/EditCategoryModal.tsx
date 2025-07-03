@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, FolderTree, Loader2, Palette, ImageIcon, Hash } from "lucide-react";
+import { X, FolderTree, Loader2, Palette, Hash } from "lucide-react";
 import { CategoryWithSubcategories, CategoryFormData } from "@/types/category";
 import { updateCategory, getCategories } from "@/actions/categories";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface EditCategoryModalProps {
   isOpen: boolean;
@@ -99,6 +100,13 @@ export function EditCategoryModal({
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleImageUpload = (url: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      imageUrl: url,
     }));
   };
 
@@ -224,45 +232,61 @@ export function EditCategoryModal({
                 <Palette className="h-5 w-5 mr-2 text-primary text-gray-500" />
                 Configuración Visual
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Icono
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.icon || ""}
-                    onChange={(e) => handleInputChange("icon", e.target.value)}
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    placeholder="Nombre del icono (ej: ShoppingBag)"
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Color
-                  </label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="color"
-                      value={formData.color || "#3B82F6"}
-                      onChange={(e) =>
-                        handleInputChange("color", e.target.value)
-                      }
-                      className="flex-5 h-10 cursor-pointer disabled:cursor-not-allowed"
-                      disabled={loading}
-                    />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Icono
+                    </label>
                     <input
                       type="text"
-                      value={formData.color || ""}
+                      value={formData.icon || ""}
                       onChange={(e) =>
-                        handleInputChange("color", e.target.value)
+                        handleInputChange("icon", e.target.value)
                       }
-                      className="flex-1 px-3 py-2 border border-input bg-background text-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
-                      placeholder="#3B82F6"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="Nombre del icono (ej: ShoppingBag)"
                       disabled={loading}
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Color
+                    </label>
+                    <div className="flex space-x-2">
+                      <input
+                        type="color"
+                        value={formData.color || "#3B82F6"}
+                        onChange={(e) =>
+                          handleInputChange("color", e.target.value)
+                        }
+                        className="flex-5 h-10 cursor-pointer disabled:cursor-not-allowed"
+                        disabled={loading}
+                      />
+                      <input
+                        type="text"
+                        value={formData.color || ""}
+                        onChange={(e) =>
+                          handleInputChange("color", e.target.value)
+                        }
+                        className="flex-1 px-3 py-2 border border-input bg-background text-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                        placeholder="#3B82F6"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Imagen de Categoría
+                  </label>
+                  <ImageUpload
+                    onImageUpload={handleImageUpload}
+                    currentImageUrl={formData.imageUrl}
+                    bucket="categorias"
+                    disabled={loading}
+                    className="w-full"
+                  />
                 </div>
               </div>
             </div>
@@ -270,53 +294,36 @@ export function EditCategoryModal({
             {/* Configuración Avanzada */}
             <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-lg p-6 border border-border">
               <h3 className="text-lg font-medium text-gray-500 mb-4 flex items-center">
-                <ImageIcon className="h-5 w-5 mr-2 text-primary text-gray-500" />
-                Configuración Avanzada
+                <FolderTree className="h-5 w-5 mr-2 text-primary text-gray-500" />
+                Jerarquía de Categorías
               </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Categoría Padre
-                  </label>
-                  <select
-                    value={formData.parentCategoryId || ""}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "parentCategoryId",
-                        e.target.value ? parseInt(e.target.value) : undefined
-                      )
-                    }
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    disabled={loading || loadingCategories}
-                  >
-                    <option value="">Sin categoría padre</option>
-                    {availableCategories.map((cat) => (
-                      <option key={cat.categoryId} value={cat.categoryId}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                  {loadingCategories && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Cargando categorías...
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    URL de Imagen
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.imageUrl || ""}
-                    onChange={(e) =>
-                      handleInputChange("imageUrl", e.target.value)
-                    }
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    placeholder="https://ejemplo.com/imagen.jpg"
-                    disabled={loading}
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Categoría Padre
+                </label>
+                <select
+                  value={formData.parentCategoryId || ""}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "parentCategoryId",
+                      e.target.value ? parseInt(e.target.value) : undefined
+                    )
+                  }
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  disabled={loading || loadingCategories}
+                >
+                  <option value="">Sin categoría padre</option>
+                  {availableCategories.map((cat) => (
+                    <option key={cat.categoryId} value={cat.categoryId}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                {loadingCategories && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Cargando categorías...
+                  </p>
+                )}
               </div>
             </div>
 
