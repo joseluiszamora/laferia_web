@@ -8,6 +8,7 @@ import { createTienda } from "@/actions/tiendas";
 import { getCategoriesForSelect } from "@/actions/categories";
 import { CategoryForSelect } from "@/types/category";
 import { useEffect } from "react";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface AddTiendaButtonProps {
   onSuccess: () => void;
@@ -446,32 +447,32 @@ export function AddTiendaButton({
                   />
                 </div>
 
-                {/* URLs de imágenes */}
+                {/* Imágenes */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      URL del Logo
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Logo de la tienda
                     </label>
-                    <input
-                      type="url"
-                      value={formData.logoUrl}
-                      onChange={(e) =>
-                        handleInputChange("logoUrl", e.target.value)
-                      }
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    <ImageUpload
+                      onImageUpload={(url) => handleInputChange("logoUrl", url)}
+                      currentImageUrl={formData.logoUrl}
+                      bucket="tiendas"
+                      disabled={saving}
+                      className="w-full"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      URL del Banner
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Banner de la tienda
                     </label>
-                    <input
-                      type="url"
-                      value={formData.bannerUrl}
-                      onChange={(e) =>
-                        handleInputChange("bannerUrl", e.target.value)
+                    <ImageUpload
+                      onImageUpload={(url) =>
+                        handleInputChange("bannerUrl", url)
                       }
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      currentImageUrl={formData.bannerUrl}
+                      bucket="tiendas"
+                      disabled={saving}
+                      className="w-full"
                     />
                   </div>
                 </div>
