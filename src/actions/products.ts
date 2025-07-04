@@ -584,6 +584,37 @@ export async function deleteProductImage(productMediasId: number) {
   return { success: true };
 }
 
+export async function setMainProductImage(productMediasId: number) {
+  try {
+    // Buscar la imagen a establecer como principal
+    const media = await prisma.productMedias.findUnique({
+      where: { productMediasId },
+      include: { product: true },
+    });
+
+    if (!media) {
+      return { success: false, error: "Imagen no encontrada" };
+    }
+
+    // Quitar el estado principal de todas las imágenes del producto
+    await prisma.productMedias.updateMany({
+      where: { productId: media.productId },
+      data: { isMain: false },
+    });
+
+    // Establecer la imagen seleccionada como principal
+    await prisma.productMedias.update({
+      where: { productMediasId },
+      data: { isMain: true },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error setting main product image:", error);
+    return { success: false, error: "Error al establecer imagen principal" };
+  }
+}
+
 // Helper para subir imagen a Supabase
 async function supabaseUploadImage(
   file: File,

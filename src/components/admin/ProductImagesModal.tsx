@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Trash2 } from "lucide-react";
+import { X, Trash2, Star } from "lucide-react";
 import Image from "next/image";
 import { ImageUpload } from "@/components/ui/image-upload";
 import {
   getProductImages,
   addProductImage,
   deleteProductImage,
+  setMainProductImage,
 } from "@/actions/products";
 
 interface ProductMedia {
@@ -33,6 +34,7 @@ export function ProductImagesModal({
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [setAsMain, setSetAsMain] = useState(false);
 
   const loadImages = async () => {
     setLoading(true);
@@ -50,9 +52,10 @@ export function ProductImagesModal({
     setUploading(true);
     setError(null);
     // Lógica para guardar en DB
-    const result = await addProductImage(productId, file!, false);
+    const result = await addProductImage(productId, file!, setAsMain);
     if (result.success) {
       loadImages();
+      setSetAsMain(false); // Reset checkbox
     } else {
       setError(result.error || "Error al subir imagen");
     }
@@ -66,6 +69,22 @@ export function ProductImagesModal({
       setImages((prev) => prev.filter((img) => img.productMediasId !== id));
     } else {
       setError(result.error || "Error al eliminar imagen");
+    }
+  };
+
+  const handleSetMainImage = async (id: number) => {
+    setError(null);
+    const result = await setMainProductImage(id);
+    if (result.success) {
+      // Actualizar el estado local para reflejar el cambio
+      setImages((prev) =>
+        prev.map((img) => ({
+          ...img,
+          isMain: img.productMediasId === id,
+        }))
+      );
+    } else {
+      setError(result.error || "Error al establecer imagen principal");
     }
   };
 
@@ -107,6 +126,8 @@ export function ProductImagesModal({
                     className="w-full h-32 object-cover"
                     unoptimized
                   />
+
+                  {/* Botón de eliminar */}
                   <button
                     type="button"
                     onClick={() => handleDelete(img.productMediasId)}
@@ -115,8 +136,23 @@ export function ProductImagesModal({
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
+
+                  {/* Botón de establecer como principal */}
+                  {!img.isMain && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetMainImage(img.productMediasId)}
+                      className="absolute top-2 left-2 bg-yellow-500 text-white rounded-full p-1 opacity-80 hover:bg-yellow-600"
+                      title="Establecer como imagen principal"
+                    >
+                      <Star className="h-4 w-4" />
+                    </button>
+                  )}
+
+                  {/* Indicador de imagen principal */}
                   {img.isMain && (
-                    <span className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                    <span className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded flex items-center">
+                      <Star className="h-3 w-3 mr-1" />
                       Principal
                     </span>
                   )}
@@ -129,6 +165,25 @@ export function ProductImagesModal({
             <label className="block text-sm font-medium mb-2">
               Agregar nueva imagen
             </label>
+
+            {/* Checkbox para establecer como principal */}
+            <div className="mb-3 flex items-center">
+              <input
+                type="checkbox"
+                id="setAsMain"
+                checked={setAsMain}
+                onChange={(e) => setSetAsMain(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                disabled={uploading}
+              />
+              <label
+                htmlFor="setAsMain"
+                className="ml-2 text-sm text-gray-700 dark:text-gray-300"
+              >
+                Establecer como imagen principal
+              </label>
+            </div>
+
             <ImageUpload
               onImageUpload={(url, file) => handleImageUpload(url, file)}
               bucket="productos"
