@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, ImageIcon } from "lucide-react";
+import Image from "next/image";
 import {
   getProducts,
   deleteProduct,
@@ -18,6 +19,7 @@ import { ProductStatus } from "@prisma/client";
 import { ProductFilters } from "./ProductFilters";
 import { ProductDetailsModal } from "./ProductDetailsModal";
 import { EditProductModal } from "./EditProductModal";
+import { ProductImagesModal } from "./ProductImagesModal";
 import { Pagination } from "./Pagination";
 
 export function ProductsTable() {
@@ -47,6 +49,8 @@ export function ProductsTable() {
   const [selectedProductId, setSelectedProductId] = useState<number>(0);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showImagesModal, setShowImagesModal] = useState(false);
+  const [imagesProductId, setImagesProductId] = useState<number>(0);
 
   const loadProducts = useCallback(
     async (
@@ -387,10 +391,16 @@ export function ProductsTable() {
       <div className="rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="">
+            <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Producto
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Imagen
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  # Imágenes
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Categoría
@@ -409,156 +419,203 @@ export function ProductsTable() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-200">
               {products.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={8}
                     className="px-6 py-8 text-center text-gray-500"
                   >
                     No se encontraron productos
                   </td>
                 </tr>
               ) : (
-                products.map((product) => (
-                  <tr key={product.productId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-500 text-xs font-medium">
-                              {product.name.substring(0, 2).toUpperCase()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 max-w-xs truncate">
-                            {product.name}
-                          </div>
-                          {product.sku && (
-                            <div className="text-sm text-gray-500">
-                              SKU: {product.sku}
+                products.map((product) => {
+                  const mainImage =
+                    product.medias?.find((m) => m.isMain) ||
+                    product.medias?.[0];
+                  return (
+                    <tr key={product.productId} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center overflow-hidden">
+                              {mainImage ? (
+                                <Image
+                                  src={mainImage.url}
+                                  alt="img"
+                                  width={40}
+                                  height={40}
+                                  className="h-10 w-10 object-cover"
+                                  unoptimized
+                                />
+                              ) : (
+                                <span className="text-gray-500 text-xs font-medium">
+                                  {product.name.substring(0, 2).toUpperCase()}
+                                </span>
+                              )}
                             </div>
-                          )}
-                          <div className="flex items-center space-x-2 mt-1">
-                            {product.isFeatured && (
-                              <span className="text-yellow-500 text-xs">
-                                ⭐
-                              </span>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900 max-w-xs truncate">
+                              {product.name}
+                            </div>
+                            {product.sku && (
+                              <div className="text-sm text-gray-500">
+                                SKU: {product.sku}
+                              </div>
                             )}
-                            {getStockStatus(product)}
+                            <div className="flex items-center space-x-2 mt-1">
+                              {product.isFeatured && (
+                                <span className="text-yellow-500 text-xs">
+                                  ⭐
+                                </span>
+                              )}
+                              {getStockStatus(product)}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {product.category.name}
-                      </div>
-                      {product.brand && (
-                        <div className="text-sm text-gray-500">
-                          {product.brand.name}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {formatPrice(Number(product.price))}
-                      </div>
-                      {product.discountedPrice && (
-                        <div className="text-sm text-green-600 font-medium">
-                          {formatPrice(Number(product.discountedPrice))}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {product.stock}
-                        {product.stock <= product.lowStockAlert && (
-                          <span className="ml-1 text-orange-500 text-xs">
-                            ⚠️
-                          </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {mainImage ? (
+                          <Image
+                            src={mainImage.url}
+                            alt="img"
+                            width={40}
+                            height={40}
+                            className="h-10 w-10 object-cover rounded mx-auto"
+                            unoptimized
+                          />
+                        ) : (
+                          <span className="text-gray-400">-</span>
                         )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <select
-                        value={product.status}
-                        onChange={(e) =>
-                          handleStatusUpdate(
-                            product.productId,
-                            e.target.value as ProductStatus
-                          )
-                        }
-                        disabled={updatingStatus === product.productId}
-                        className={`text-xs font-semibold rounded-full px-2 py-1 border-0 focus:ring-2 focus:ring-blue-500 ${getStatusColor(
-                          product.status
-                        )}`}
-                      >
-                        <option value="PUBLISHED">Publicado</option>
-                        <option value="DRAFT">Borrador</option>
-                        <option value="ARCHIVED">Archivado</option>
-                        <option value="EXHAUSTED">Agotado</option>
-                      </select>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => handleViewDetails(product.productId)}
-                          className="text-indigo-600 hover:text-indigo-900"
-                          title="Ver producto"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(product.productId)}
-                          className="text-green-600 hover:text-green-900"
-                          title="Editar producto"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleToggleAvailability(product.productId)
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className="text-sm text-gray-900">
+                          {product.medias?.length || 0}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {product.category.name}
+                        </div>
+                        {product.brand && (
+                          <div className="text-sm text-gray-500">
+                            {product.brand.name}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {formatPrice(Number(product.price))}
+                        </div>
+                        {product.discountedPrice && (
+                          <div className="text-sm text-green-600 font-medium">
+                            {formatPrice(Number(product.discountedPrice))}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {product.stock}
+                          {product.stock <= product.lowStockAlert && (
+                            <span className="ml-1 text-orange-500 text-xs">
+                              ⚠️
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <select
+                          value={product.status}
+                          onChange={(e) =>
+                            handleStatusUpdate(
+                              product.productId,
+                              e.target.value as ProductStatus
+                            )
                           }
-                          className={`${
-                            product.isAvailable
-                              ? "text-yellow-600 hover:text-yellow-900"
-                              : "text-green-600 hover:text-green-900"
-                          }`}
-                          title={product.isAvailable ? "Desactivar" : "Activar"}
+                          disabled={updatingStatus === product.productId}
+                          className={`text-xs font-semibold rounded-full px-2 py-1 border-0 focus:ring-2 focus:ring-blue-500 ${getStatusColor(
+                            product.status
+                          )}`}
                         >
-                          {product.isAvailable ? "⏸️" : "▶️"}
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleToggleFeatured(product.productId)
-                          }
-                          className={`${
-                            product.isFeatured
-                              ? "text-yellow-500"
-                              : "text-gray-400"
-                          } hover:text-yellow-600`}
-                          title={
-                            product.isFeatured
-                              ? "Quitar destacado"
-                              : "Marcar como destacado"
-                          }
-                        >
-                          ⭐
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.productId)}
-                          disabled={deleting === product.productId}
-                          className="text-red-600 hover:text-red-900"
-                          title="Eliminar producto"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          <option value="PUBLISHED">Publicado</option>
+                          <option value="DRAFT">Borrador</option>
+                          <option value="ARCHIVED">Archivado</option>
+                          <option value="EXHAUSTED">Agotado</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button
+                            onClick={() => handleViewDetails(product.productId)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                            title="Ver producto"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(product.productId)}
+                            className="text-green-600 hover:text-green-900"
+                            title="Editar producto"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleToggleAvailability(product.productId)
+                            }
+                            className={`${
+                              product.isAvailable
+                                ? "text-yellow-600 hover:text-yellow-900"
+                                : "text-green-600 hover:text-green-900"
+                            }`}
+                            title={
+                              product.isAvailable ? "Desactivar" : "Activar"
+                            }
+                          >
+                            {product.isAvailable ? "⏸️" : "▶️"}
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleToggleFeatured(product.productId)
+                            }
+                            className={`${
+                              product.isFeatured
+                                ? "text-yellow-500"
+                                : "text-gray-400"
+                            } hover:text-yellow-600`}
+                            title={
+                              product.isFeatured
+                                ? "Quitar destacado"
+                                : "Marcar como destacado"
+                            }
+                          >
+                            ⭐
+                          </button>
+                          <button
+                            onClick={() => {
+                              setImagesProductId(product.productId);
+                              setShowImagesModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="Gestionar imágenes"
+                          >
+                            <ImageIcon className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product.productId)}
+                            disabled={deleting === product.productId}
+                            className="text-red-600 hover:text-red-900"
+                            title="Eliminar producto"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -588,6 +645,12 @@ export function ProductsTable() {
         onClose={() => setShowEditModal(false)}
         productId={selectedProductId}
         onSuccess={handleEditSuccess}
+      />
+
+      <ProductImagesModal
+        isOpen={showImagesModal}
+        onClose={() => setShowImagesModal(false)}
+        productId={imagesProductId}
       />
     </div>
   );

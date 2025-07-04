@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { ProductFormData, ProductsTableParams } from "@/types/product";
 import { revalidatePath } from "next/cache";
+import { supabase } from "@/lib/supabase";
 
 import { Prisma, ProductStatus } from "@prisma/client";
 
@@ -529,4 +530,77 @@ export async function updateProductStatus(id: number, status: ProductStatus) {
       error: "Error al actualizar el estado del producto",
     };
   }
+}
+
+export async function getProductImages(productId: number) {
+  return prisma.productMedias.findMany({
+    where: { productId },
+    orderBy: [{ isMain: "desc" }, { order: "asc" }, { createdAt: "asc" }],
+  });
+}
+
+export async function addProductImage(
+  productId: number,
+  file: File,
+  isMain: boolean = false
+) {
+  // Subir imagen a Supabase
+  const upload = await supabaseUploadImage(
+    file,
+    "productos",
+    String(productId)
+  );
+  if (upload.error || !upload.url)
+    return {
+      success: false,
+      error: upload.error || "No se pudo obtener la URL de la imagen",
+    };
+  // Guardar en DB
+  const media = await prisma.productMedias.create({
+    data: {
+      productId,
+      url: upload.url,
+      isMain,
+      type: "IMAGE",
+    },
+  });
+  return { success: true, data: media };
+}
+
+export async function deleteProductImage(productMediasId: number) {
+  // Buscar media
+  const media = await prisma.productMedias.findUnique({
+    where: { productMediasId },
+  });
+  if (!media) return { success: false, error: "Imagen no encontrada" };
+  // Eliminar de Supabase
+  const url = new URL(media.url);
+  const path = decodeURIComponent(
+    url.pathname.replace(/^\/storage\/v1\/object\/public\/productos\//, "")
+  );
+  await supabase.storage.from("productos").remove([path]);
+  // Eliminar de DB
+  await prisma.productMedias.delete({ where: { productMediasId } });
+  return { success: true };
+}
+
+// Helper para subir imagen a Supabase
+async function supabaseUploadImage(
+  file: File,
+  bucket: string,
+  folder?: string
+) {
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${Date.now()}-${Math.random()
+    .toString(36)
+    .substring(2)}.${fileExt}`;
+  const filePath = folder ? `${folder}/${fileName}` : fileName;
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .upload(filePath, file, { cacheControl: "3600", upsert: false });
+  if (error) return { error: error.message };
+  const { data: urlData } = supabase.storage
+    .from(bucket)
+    .getPublicUrl(data.path);
+  return { url: urlData.publicUrl };
 }

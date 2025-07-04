@@ -6,7 +6,7 @@ import Image from "next/image";
 import { uploadImage } from "@/lib/supabase";
 
 interface ImageUploadProps {
-  onImageUpload: (url: string) => void;
+  onImageUpload: (url: string, file?: File) => void;
   currentImageUrl?: string;
   bucket: string;
   folder?: string;
@@ -54,7 +54,7 @@ export function ImageUpload({
         setPreviewUrl(currentImageUrl || "");
       } else if (result.url) {
         setPreviewUrl(result.url);
-        onImageUpload(result.url);
+        onImageUpload(result.url, file);
       }
 
       // Limpiar preview local
