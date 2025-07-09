@@ -13,6 +13,7 @@ import {
   Store,
   ChevronDown,
   TrendingUp,
+  MapPin,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -46,6 +47,12 @@ const navigation = [
     href: "/admin/tiendas",
     icon: Store,
     description: "Red de tiendas",
+  },
+  {
+    name: "Mapa",
+    href: "/admin/map",
+    icon: MapPin,
+    description: "Ubicación de tiendas",
   },
   {
     name: "Categorías",

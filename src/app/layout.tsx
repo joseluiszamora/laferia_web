@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
+import "../components/admin/map-styles.css";
 
 const inter = Inter({
   variable: "--font-inter",

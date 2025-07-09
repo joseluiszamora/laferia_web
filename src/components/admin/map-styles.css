@@ -1,0 +1,54 @@
+/* Estilos para el componente de mapa */
+
+/* Animación para el marcador de nueva tienda */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Estilos para marcadores personalizados */
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.new-store-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Cursor personalizado cuando está en modo agregar tienda */
+.leaflet-container.adding-store {
+  cursor: crosshair !important;
+}
+
+.leaflet-container.adding-store * {
+  cursor: crosshair !important;
+}
+
+/* Estilo para el popup de nueva tienda */
+.leaflet-popup-content {
+  margin: 8px !important;
+}
+
+/* Mejoras responsivas para el mapa */
+@media (max-width: 768px) {
+  .leaflet-control-zoom {
+    margin-left: 10px !important;
+    margin-top: 60px !important;
+  }
+
+  .leaflet-control-attribution {
+    font-size: 10px !important;
+  }
+}
