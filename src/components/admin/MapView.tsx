@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 
 // Importación dinámica de Leaflet para evitar problemas de SSR
 const MapContainer = dynamic(
@@ -20,6 +20,9 @@ const Marker = dynamic(
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
   ssr: false,
 });
+
+import { useMapEvents } from "react-leaflet";
+import { AddStoreFromMapModal } from "./AddStoreFromMapModal";
 
 import L from "leaflet";
 
@@ -55,6 +58,11 @@ export function MapView() {
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAddingStore, setIsAddingStore] = useState(false);
+  const [newStorePosition, setNewStorePosition] = useState<
+    [number, number] | null
+  >(null);
+  const [showAddStoreModal, setShowAddStoreModal] = useState(false);
 
   useEffect(() => {
     async function fetchStores() {
@@ -74,6 +82,18 @@ export function MapView() {
 
     fetchStores();
   }, []);
+
+  const refreshStores = async () => {
+    try {
+      const response = await fetch("/api/stores");
+      if (response.ok) {
+        const data = await response.json();
+        setStores(data);
+      }
+    } catch (err) {
+      console.error("Error refreshing stores:", err);
+    }
+  };
 
   if (loading) {
     return (
@@ -136,18 +156,85 @@ export function MapView() {
     });
   };
 
+  // Crear icono para nueva tienda (temporal)
+  const createNewStoreIcon = () => {
+    return L.divIcon({
+      className: "new-store-marker",
+      html: `
+        <div style="
+          background-color: #3b82f6;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          border: 3px solid white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+          animation: pulse 2s infinite;
+        "></div>
+      `,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+    });
+  };
+
+  // Componente para manejar clics en el mapa
+  function MapClickHandler() {
+    useMapEvents({
+      click(e) {
+        if (isAddingStore) {
+          setNewStorePosition([e.latlng.lat, e.latlng.lng]);
+          setShowAddStoreModal(true);
+          setIsAddingStore(false);
+        }
+      },
+    });
+    return null;
+  }
+
   return (
     <div className="h-[600px] w-full relative rounded-lg overflow-hidden">
+      {/* Botón para agregar tienda */}
+      <div className="absolute top-4 left-4 z-10">
+        <button
+          onClick={() => setIsAddingStore(!isAddingStore)}
+          className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-lg ${
+            isAddingStore
+              ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              : "bg-primary text-primary-foreground hover:bg-primary/90"
+          }`}
+        >
+          {isAddingStore ? (
+            <>
+              <X className="w-4 h-4 inline mr-2" />
+              Cancelar
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4 inline mr-2" />
+              Agregar Tienda
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Instrucciones cuando está en modo agregar */}
+      {isAddingStore && (
+        <div className="absolute top-16 left-4 bg-primary/90 text-primary-foreground px-3 py-2 rounded-lg text-sm shadow-lg z-10">
+          Haz clic en el mapa para agregar una nueva tienda
+        </div>
+      )}
+
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
         style={{ height: "100%", width: "100%" }}
-        className="z-0"
+        className={`z-0 ${isAddingStore ? "adding-store" : ""}`}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+        <MapClickHandler />
 
         {stores.map((store) => (
           <Marker
@@ -222,6 +309,22 @@ export function MapView() {
             </Popup>
           </Marker>
         ))}
+
+        {/* Marcador temporal para nueva tienda */}
+        {newStorePosition && (
+          <Marker position={newStorePosition} icon={createNewStoreIcon()}>
+            <Popup>
+              <div className="p-2 text-center">
+                <h4 className="font-medium text-primary mb-1">Nueva Tienda</h4>
+                <p className="text-xs text-muted-foreground">
+                  Lat: {newStorePosition[0].toFixed(6)}
+                  <br />
+                  Lng: {newStorePosition[1].toFixed(6)}
+                </p>
+              </div>
+            </Popup>
+          </Marker>
+        )}
       </MapContainer>
 
       {/* Leyenda */}
@@ -256,6 +359,24 @@ export function MapView() {
           <span className="text-primary font-bold">{stores.length}</span>
         </div>
       </div>
+
+      {/* Modal para agregar tienda */}
+      {showAddStoreModal && newStorePosition && (
+        <AddStoreFromMapModal
+          isOpen={showAddStoreModal}
+          onClose={() => {
+            setShowAddStoreModal(false);
+            setNewStorePosition(null);
+          }}
+          latitude={newStorePosition[0]}
+          longitude={newStorePosition[1]}
+          onSuccess={() => {
+            refreshStores();
+            setShowAddStoreModal(false);
+            setNewStorePosition(null);
+          }}
+        />
+      )}
     </div>
   );
 }
