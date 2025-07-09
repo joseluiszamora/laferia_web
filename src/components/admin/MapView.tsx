@@ -218,7 +218,7 @@ export function MapView() {
 
       {/* Instrucciones cuando está en modo agregar */}
       {isAddingStore && (
-        <div className="absolute top-16 left-4 bg-primary/90 text-primary-foreground px-3 py-2 rounded-lg text-sm shadow-lg z-10">
+        <div className="absolute top-16 left-32 bg-primary/90 text-primary-foreground px-3 py-2 rounded-lg text-sm shadow-lg z-10">
           Haz clic en el mapa para agregar una nueva tienda
         </div>
       )}
