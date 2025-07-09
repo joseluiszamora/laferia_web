@@ -98,9 +98,8 @@ export function MapView() {
   }
 
   // Centro del mapa (Guatemala City como referencia)
-  const defaultCenter: [number, number] = [14.6349, -90.5069];
-  const defaultZoom = 10;
-
+  const defaultCenter: [number, number] = [-16.4953, -68.17];
+  const defaultZoom = 16;
   // Función para obtener color del marker según el status
   const getMarkerColor = (status: string) => {
     switch (status) {
@@ -251,7 +250,7 @@ export function MapView() {
       </div>
 
       {/* Contador de tiendas */}
-      <div className="absolute top-4 left-4 bg-background border border-border rounded-lg p-3 shadow-lg z-10">
+      <div className="absolute top-4 right-4 bg-background border border-border rounded-lg p-3 shadow-lg z-10">
         <div className="text-sm">
           <span className="font-medium text-foreground">Total de tiendas:</span>{" "}
           <span className="text-primary font-bold">{stores.length}</span>
