@@ -10,193 +10,6 @@ datasource db {
   extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions")]
 }
 
-model Category {
-  categoryId       Int        @id @default(autoincrement()) @map("category_id")
-  name             String     @unique @db.VarChar(255)
-  slug             String     @unique @db.VarChar(255)
-  description      String?
-  icon             String?    @db.VarChar(100)
-  color            String?    @db.VarChar(7)
-  imageUrl         String?    @map("image_url")
-  isActive         Boolean    @default(true) @map("is_active")
-  sortOrder        Int        @default(0) @map("sort_order")
-  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  parentCategoryId Int?       @map("parent_category_id")
-  parentCategory   Category?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [categoryId], onDelete: Cascade)
-  subcategories    Category[] @relation("CategoryHierarchy")
-  products         Product[]
-  stores           Store[]
-
-  @@index([name], map: "idx_category_name")
-  @@index([parentCategoryId], map: "idx_category_parent_id")
-  @@index([slug], map: "idx_category_slug")
-  @@index([isActive], map: "idx_category_active")
-  @@index([sortOrder], map: "idx_category_sort_order")
-  @@map("Category")
-}
-
-model Store {
-  storeId       Int         @id @default(autoincrement()) @map("store_id")
-  name          String      @db.VarChar(255)
-  slug          String      @unique @db.VarChar(255)
-  ownerName     String      @map("owner_name") @db.VarChar(255)
-  email         String?     @db.VarChar(255)
-  phone         String?     @db.VarChar(50)
-  whatsapp      String?     @db.VarChar(50)
-  latitude      Float
-  longitude     Float
-  categoryId    Int         @map("category_id")
-  contact       Json?
-  address       String?
-  daysAttention String[]    @default(["thursday", "sunday"]) @map("days_attention")
-  openingHours  String?     @default("08:00 - 18:00") @map("opening_hours") @db.VarChar(50)
-  averageRating Decimal?    @default(0.00) @map("average_rating") @db.Decimal(3, 2)
-  totalComments Int         @default(0) @map("total_comments")
-  status        StoreStatus @default(PENDING)
-  logoUrl       String?     @map("logo_url")
-  bannerUrl     String?     @map("banner_url")
-  description   String?
-  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  comments      Comment[]
-  products      Product[]
-  category      Category    @relation(fields: [categoryId], references: [categoryId], onUpdate: NoAction)
-
-  @@index([name], map: "idx_store_name")
-  @@index([slug], map: "idx_store_slug")
-  @@index([latitude, longitude], map: "idx_store_location")
-  @@index([categoryId], map: "idx_store_category_id")
-  @@index([status], map: "idx_store_status")
-  @@map("Store")
-}
-
-model Product {
-  productId        Int                 @id @default(autoincrement()) @map("product_id")
-  name             String              @db.VarChar(255)
-  slug             String              @unique @db.VarChar(255)
-  description      String
-  shortDescription String?             @map("short_description") @db.VarChar(500)
-  sku              String?             @unique @db.VarChar(100)
-  barcode          String?             @unique @db.VarChar(100)
-  price            Decimal             @db.Decimal(10, 2)
-  discountedPrice  Decimal?            @map("discounted_price") @db.Decimal(10, 2)
-  costPrice        Decimal?            @map("cost_price") @db.Decimal(10, 2)
-  acceptOffers     Boolean             @default(false) @map("accept_offers")
-  stock            Int                 @default(0)
-  lowStockAlert    Int                 @default(5) @map("low_stock_alert")
-  weight           Decimal?            @db.Decimal(8, 2)
-  dimensions       Json?
-  categoryId       Int                 @map("category_id")
-  brandId          Int?                @map("brand_id")
-  storeId          Int                 @map("store_id")
-  status           ProductStatus       @default(DRAFT)
-  isAvailable      Boolean             @default(true) @map("is_available")
-  isFeatured       Boolean             @default(false) @map("is_featured")
-  metaTitle        String?             @map("meta_title") @db.VarChar(255)
-  metaDescription  String?             @map("meta_description") @db.VarChar(500)
-  tags             String[]            @default([])
-  viewCount        Int                 @default(0) @map("view_count")
-  saleCount        Int                 @default(0) @map("sale_count")
-  createdAt        DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  brand            Brand?              @relation(fields: [brandId], references: [brandId], onUpdate: NoAction)
-  category         Category            @relation(fields: [categoryId], references: [categoryId], onUpdate: NoAction)
-  store            Store               @relation(fields: [storeId], references: [storeId], onUpdate: NoAction)
-  attributes       ProductAttributes[]
-  medias           ProductMedias[]
-
-  @@index([name], map: "idx_product_name")
-  @@index([slug], map: "idx_product_slug")
-  @@index([categoryId], map: "idx_product_category_id")
-  @@index([brandId], map: "idx_product_brand_id")
-  @@index([storeId], map: "idx_product_store_id")
-  @@index([status], map: "idx_product_status")
-  @@index([isAvailable], map: "idx_product_available")
-  @@index([isFeatured], map: "idx_product_featured")
-  @@index([sku], map: "idx_product_sku")
-  @@index([barcode], map: "idx_product_barcode")
-  @@map("Product")
-}
-
-model Brand {
-  brandId     Int       @id @default(autoincrement()) @map("brand_id")
-  name        String    @unique @db.VarChar(255)
-  slug        String    @unique @db.VarChar(255)
-  description String?
-  logoUrl     String?   @map("logo_url")
-  websiteUrl  String?   @map("website_url")
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  products    Product[]
-
-  @@index([name], map: "idx_brand_name")
-  @@index([slug], map: "idx_brand_slug")
-  @@index([isActive], map: "idx_brand_active")
-  @@map("Brand")
-}
-
-model ProductAttributes {
-  productAttributesId Int      @id @default(autoincrement()) @map("product_attributes_id")
-  productId           Int      @map("product_id")
-  name                String   @db.VarChar(100)
-  value               String   @db.VarChar(255)
-  type                String?  @default("text") @db.VarChar(50)
-  unity               String?  @db.VarChar(20)
-  order               Int      @default(0)
-  isVisible           Boolean  @default(true) @map("is_visible")
-  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  product             Product  @relation(fields: [productId], references: [productId], onDelete: Cascade, onUpdate: NoAction)
-
-  @@map("ProductAttributes")
-}
-
-model ProductMedias {
-  productMediasId Int       @id @default(autoincrement()) @map("product_medias_id")
-  productId       Int       @map("product_id")
-  type            MediaType @default(IMAGE)
-  url             String
-  thumbnailUrl    String?   @map("thumbnail_url")
-  width           Int?
-  height          Int?
-  fileSize        BigInt?   @map("file_size")
-  duration        Int?
-  order           Int       @default(0)
-  isMain          Boolean   @default(false) @map("is_main")
-  isActive        Boolean   @default(true) @map("is_active")
-  description     String?
-  altText         String?   @map("alt_text") @db.VarChar(255)
-  metadata        Json?
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  product         Product   @relation(fields: [productId], references: [productId], onDelete: Cascade, onUpdate: NoAction)
-
-  @@map("ProductMedias")
-}
-
-model Comment {
-  commentId Int       @id @default(autoincrement()) @map("comment_id")
-  storeId   Int       @map("store_id")
-  userName  String    @map("user_name") @db.VarChar(255)
-  userEmail String?   @map("user_email") @db.VarChar(255)
-  avatarUrl String?   @map("avatar_url")
-  comment   String
-  rating    Decimal   @db.Decimal(2, 1)
-  approved  Boolean   @default(false)
-  images    String[]  @default([])
-  answer    String?
-  answerAt  DateTime? @map("answer_at") @db.Timestamptz(6)
-  isActive  Boolean   @default(true) @map("is_active")
-  ipAddress String?   @map("ip_address") @db.VarChar(45)
-  userAgent String?   @map("user_agent")
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  store     Store     @relation(fields: [storeId], references: [storeId], onDelete: Cascade, onUpdate: NoAction)
-
-  @@map("Comment")
-}
-
 enum StoreStatus {
   ACTIVE   @map("active")
   INACTIVE @map("inactive")
@@ -221,4 +34,281 @@ enum MediaType {
   PDF   @map("pdf")
 
   @@map("media_type")
+}
+
+model Category {
+  categoryId       Int      @id @default(autoincrement()) @map("category_id")
+  parentCategoryId Int?     @map("parent_category_id")
+  name             String   @unique @db.VarChar(255)
+  slug             String   @unique @db.VarChar(255)
+  description      String?  @db.Text
+  icon             String?  @db.VarChar(100)
+  color            String?  @db.VarChar(7) // Para colores hex #RRGGBB
+  imageUrl         String?  @map("image_url") @db.Text
+  isActive         Boolean  @default(true) @map("is_active")
+  sortOrder        Int      @default(0) @map("sort_order")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Nuevos campos para búsqueda
+  searchKeywords String[] @default([]) @map("search_keywords")
+  searchScore    Decimal  @default(0.0) @map("search_score") @db.Decimal(10, 4)
+
+  // Auto-relación para jerarquías
+  parentCategory Category?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [categoryId], onDelete: Cascade)
+  subcategories  Category[] @relation("CategoryHierarchy")
+  // Relaciones con otras entidades
+  products       Product[]
+  stores         Store[]
+
+  @@index([name], map: "idx_category_name")
+  @@index([parentCategoryId], map: "idx_category_parent_id")
+  @@index([slug], map: "idx_category_slug")
+  @@index([isActive], map: "idx_category_active")
+  @@index([sortOrder], map: "idx_category_sort_order")
+  @@index([searchKeywords], map: "idx_category_search_keywords", type: Gin)
+  @@index([searchScore], map: "idx_category_search_score")
+  @@map("Category")
+}
+
+model Store {
+  storeId       Int         @id @default(autoincrement()) @map("store_id")
+  name          String      @db.VarChar(255)
+  slug          String      @unique @db.VarChar(255)
+  ownerName     String      @map("owner_name") @db.VarChar(255)
+  email         String?     @db.VarChar(255)
+  phone         String?     @db.VarChar(50)
+  whatsapp      String?     @db.VarChar(50)
+  latitude      Float
+  longitude     Float
+  categoryId    Int         @map("category_id")
+  contact       Json?
+  address       String?     @db.Text
+  daysAttention String[]    @default(["thursday", "sunday"]) @map("days_attention")
+  openingHours  String?     @default("08:00 - 18:00") @map("opening_hours") @db.VarChar(50)
+  averageRating Decimal?    @default(0.00) @map("average_rating") @db.Decimal(3, 2)
+  totalComments Int         @default(0) @map("total_comments")
+  status        StoreStatus @default(PENDING)
+  logoUrl       String?     @map("logo_url") @db.Text
+  bannerUrl     String?     @map("banner_url") @db.Text
+  description   String?     @db.Text
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Nuevos campos para búsqueda
+  searchKeywords String[] @default([]) @map("search_keywords")
+  searchScore    Decimal  @default(0.0) @map("search_score") @db.Decimal(10, 4)
+  isPromoted     Boolean  @default(false) @map("is_promoted")
+
+  // Relaciones
+  category Category  @relation(fields: [categoryId], references: [categoryId], onUpdate: NoAction)
+  comments Comment[]
+  products Product[]
+
+  @@index([name], map: "idx_store_name")
+  @@index([slug], map: "idx_store_slug")
+  @@index([latitude, longitude], map: "idx_store_location")
+  @@index([categoryId], map: "idx_store_category_id")
+  @@index([status], map: "idx_store_status")
+  @@index([searchKeywords], map: "idx_store_search_keywords", type: Gin)
+  @@index([searchScore], map: "idx_store_search_score")
+  @@map("Store")
+}
+
+model Product {
+  productId        Int           @id @default(autoincrement()) @map("product_id")
+  name             String        @db.VarChar(255)
+  slug             String        @unique @db.VarChar(255)
+  description      String        @db.Text
+  shortDescription String?       @map("short_description") @db.VarChar(500)
+  sku              String?       @unique @db.VarChar(100)
+  barcode          String?       @unique @db.VarChar(100)
+  price            Decimal       @db.Decimal(10, 2)
+  discountedPrice  Decimal?      @map("discounted_price") @db.Decimal(10, 2)
+  costPrice        Decimal?      @map("cost_price") @db.Decimal(10, 2)
+  acceptOffers     Boolean       @default(false) @map("accept_offers")
+  stock            Int           @default(0)
+  lowStockAlert    Int           @default(5) @map("low_stock_alert")
+  weight           Decimal?      @db.Decimal(8, 2) // en kg
+  dimensions       Json? // {width: 10, height: 20, depth: 30} en cm
+  categoryId       Int           @map("category_id")
+  brandId          Int?          @map("brand_id")
+  storeId          Int           @map("store_id")
+  status           ProductStatus @default(DRAFT)
+  isAvailable      Boolean       @default(true) @map("is_available")
+  isFeatured       Boolean       @default(false) @map("is_featured")
+  metaTitle        String?       @map("meta_title") @db.VarChar(255)
+  metaDescription  String?       @map("meta_description") @db.VarChar(500)
+  tags             String[]      @default([])
+  viewCount        Int           @default(0) @map("view_count")
+  saleCount        Int           @default(0) @map("sale_count")
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Nuevos campos para búsqueda
+  searchKeywords String[] @default([]) @map("search_keywords") // palabras clave adicionales
+  searchScore    Decimal  @default(0.0) @map("search_score") @db.Decimal(10, 4) // score de relevancia
+  isPromoted     Boolean  @default(false) @map("is_promoted") // producto promocionado en búsquedas
+
+  // Relaciones
+  category   Category            @relation(fields: [categoryId], references: [categoryId], onUpdate: NoAction)
+  brand      Brand?              @relation(fields: [brandId], references: [brandId], onUpdate: NoAction)
+  store      Store               @relation(fields: [storeId], references: [storeId], onUpdate: NoAction)
+  attributes ProductAttributes[]
+  medias     ProductMedias[]
+
+  @@index([name], map: "idx_product_name")
+  @@index([slug], map: "idx_product_slug")
+  @@index([categoryId], map: "idx_product_category_id")
+  @@index([brandId], map: "idx_product_brand_id")
+  @@index([storeId], map: "idx_product_store_id")
+  @@index([status], map: "idx_product_status")
+  @@index([isAvailable], map: "idx_product_available")
+  @@index([isFeatured], map: "idx_product_featured")
+  @@index([sku], map: "idx_product_sku")
+  @@index([barcode], map: "idx_product_barcode")
+  @@index([searchKeywords], map: "idx_product_search_keywords", type: Gin)
+  @@index([searchScore], map: "idx_product_search_score")
+  @@map("Product")
+}
+
+model Brand {
+  brandId     Int      @id @default(autoincrement()) @map("brand_id")
+  name        String   @unique @db.VarChar(255)
+  slug        String   @unique @db.VarChar(255)
+  description String?  @db.Text
+  logoUrl     String?  @map("logo_url") @db.Text
+  websiteUrl  String?  @map("website_url") @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relaciones
+  products Product[]
+
+  @@index([name], map: "idx_brand_name")
+  @@index([slug], map: "idx_brand_slug")
+  @@index([isActive], map: "idx_brand_active")
+  @@map("Brand")
+}
+
+model ProductAttributes {
+  productAttributesId Int      @id @default(autoincrement()) @map("product_attributes_id")
+  productId           Int      @map("product_id")
+  name                String   @db.VarChar(100)
+  value               String   @db.VarChar(255)
+  type                String?  @default("text") @db.VarChar(50) // text, number, boolean, color, size, etc.
+  unity               String?  @db.VarChar(20) // kg, cm, litros, etc.
+  order               Int      @default(0)
+  isVisible           Boolean  @default(true) @map("is_visible")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relaciones
+  product Product @relation(fields: [productId], references: [productId], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("ProductAttributes")
+}
+
+model ProductMedias {
+  productMediasId Int       @id @default(autoincrement()) @map("product_medias_id")
+  productId       Int       @map("product_id")
+  type            MediaType @default(IMAGE)
+  url             String    @db.Text
+  thumbnailUrl    String?   @map("thumbnail_url") @db.Text
+  width           Int?
+  height          Int?
+  fileSize        BigInt?   @map("file_size") // en bytes
+  duration        Int? // para videos, en segundos
+  order           Int       @default(0)
+  isMain          Boolean   @default(false) @map("is_main")
+  isActive        Boolean   @default(true) @map("is_active")
+  description     String?   @db.Text
+  altText         String?   @map("alt_text") @db.VarChar(255)
+  metadata        Json? // información adicional como exif, etc.
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relaciones
+  product Product @relation(fields: [productId], references: [productId], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("ProductMedias")
+}
+
+model Comment {
+  commentId Int       @id @default(autoincrement()) @map("comment_id")
+  storeId   Int       @map("store_id")
+  userName  String    @map("user_name") @db.VarChar(255)
+  userEmail String?   @map("user_email") @db.VarChar(255)
+  avatarUrl String?   @map("avatar_url") @db.Text
+  comment   String    @db.Text
+  rating    Decimal   @db.Decimal(2, 1)
+  approved  Boolean   @default(false)
+  images    String[]  @default([])
+  answer    String?   @db.Text // respuesta de la tienda
+  answerAt  DateTime? @map("answer_at") @db.Timestamptz(6)
+  isActive  Boolean   @default(true) @map("is_active")
+  ipAddress String?   @map("ip_address") @db.VarChar(45)
+  userAgent String?   @map("user_agent") @db.Text
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relaciones
+  store Store @relation(fields: [storeId], references: [storeId], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("Comment")
+}
+
+model SearchHistory {
+  searchHistoryId Int      @id @default(autoincrement()) @map("search_history_id")
+  userId          String?  @map("user_id") // null para usuarios anónimos
+  sessionId       String   @map("session_id") // para tracking anónimo
+  query           String   @db.VarChar(255)
+  searchType      String   @default("general") @map("search_type") // general, product, store, category
+  resultCount     Int      @default(0) @map("result_count")
+  clicked         Boolean  @default(false) // si el usuario hizo clic en algún resultado
+  clickedType     String?  @map("clicked_type") // product, store, category
+  clickedId       Int?     @map("clicked_id")
+  filters         Json? // filtros aplicados en la búsqueda
+  location        Json? // {lat, lng} si se usó ubicación
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([userId], map: "idx_search_history_user")
+  @@index([sessionId], map: "idx_search_history_session")
+  @@index([query], map: "idx_search_history_query")
+  @@index([createdAt], map: "idx_search_history_created")
+  @@map("SearchHistory")
+}
+
+model TrendingSearches {
+  trendingSearchId Int      @id @default(autoincrement()) @map("trending_search_id")
+  query            String   @unique @db.VarChar(255)
+  searchCount      Int      @default(1) @map("search_count")
+  category         String?  @db.VarChar(100) // para agrupar por categoría
+  region           String?  @db.VarChar(100) // para tendencias regionales
+  isPromoted       Boolean  @default(false) @map("is_promoted") // búsquedas promocionadas
+  trendScore       Decimal  @default(0.0) @map("trend_score") @db.Decimal(10, 4)
+  lastSearched     DateTime @default(now()) @map("last_searched") @db.Timestamptz(6)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([trendScore], map: "idx_trending_trend_score")
+  @@index([searchCount], map: "idx_trending_search_count")
+  @@index([category], map: "idx_trending_category")
+  @@index([lastSearched], map: "idx_trending_last_searched")
+  @@map("TrendingSearches")
+}
+
+model SearchSuggestions {
+  suggestionId   Int      @id @default(autoincrement()) @map("suggestion_id")
+  query          String   @db.VarChar(255)
+  suggestion     String   @db.VarChar(255)
+  suggestionType String   @map("suggestion_type") // autocomplete, related, similar
+  weight         Int      @default(1) // peso/relevancia de la sugerencia
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([query], map: "idx_suggestions_query")
+  @@index([suggestionType], map: "idx_suggestions_type")
+  @@index([weight], map: "idx_suggestions_weight")
+  @@map("SearchSuggestions")
 }
